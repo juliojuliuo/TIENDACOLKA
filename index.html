@@ -7,85 +7,92 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primario: #1b4b8a;
-            --secundario: #00d2ff;
-            --fondo: #f8fafc;
+            --primario: #1b4b8a; /* Azul profesional */
+            --secundario: #25d366; /* Verde WhatsApp */
+            --fondo: #f1f5f9;
             --texto: #1e293b;
+            --blanco: #ffffff;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             background-color: var(--fondo);
             color: var(--texto);
         }
 
-        /* HEADER CLARO */
+        /* HEADER */
         header {
-            background: white;
-            padding: 30px 20px;
+            background: var(--blanco);
+            padding: 40px 20px;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .logo {
-            font-size: 2.5rem;
-            font-weight: 800;
+            font-size: 2.8rem;
+            font-weight: 900;
             color: var(--primario);
             margin: 0;
-            letter-spacing: -1px;
+            letter-spacing: -2px;
+            text-transform: uppercase;
+        }
+
+        .slogan {
+            color: var(--gris);
+            font-size: 1rem;
+            margin-top: 5px;
+            font-weight: 400;
         }
 
         /* BUSCADOR */
-        .search-container {
+        .search-box {
             max-width: 600px;
             margin: -25px auto 30px;
             padding: 0 20px;
+            position: relative;
+            z-index: 10;
         }
 
         #buscador {
             width: 100%;
-            padding: 15px 25px;
+            padding: 18px 30px;
             border-radius: 50px;
-            border: 2px solid #e2e8f0;
+            border: none;
             font-size: 16px;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             outline: none;
-            transition: 0.3s;
-        }
-
-        #buscador:focus {
-            border-color: var(--primario);
         }
 
         /* CATEGORÍAS */
-        .categorias-bar {
+        .categorias {
             display: flex;
             justify-content: center;
             gap: 10px;
             margin-bottom: 30px;
             overflow-x: auto;
             padding: 10px;
+            scrollbar-width: none;
         }
 
         .cat-btn {
-            background: white;
-            border: 1px solid #e2e8f0;
-            padding: 8px 20px;
-            border-radius: 20px;
+            background: var(--blanco);
+            border: 2px solid transparent;
+            padding: 10px 20px;
+            border-radius: 50px;
             cursor: pointer;
-            font-weight: 600;
-            white-space: nowrap;
+            font-weight: bold;
             transition: 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            white-space: nowrap;
         }
 
-        .cat-btn:hover, .cat-btn.active {
+        .cat-btn.active, .cat-btn:hover {
             background: var(--primario);
             color: white;
-            border-color: var(--primario);
         }
 
-        /* GRILLA DE PRODUCTOS */
+        /* CUADRÍCULA DE PRODUCTOS */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -94,56 +101,113 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
         }
 
         .card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
+            background: var(--blanco);
+            border-radius: 20px;
+            padding: 25px;
             text-align: center;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
             transition: 0.3s;
-            border: 1px solid #f1f5f9;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.1);
+            border-color: var(--primario);
         }
 
         .card i {
-            font-size: 45px;
+            font-size: 50px;
             color: var(--primario);
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .card h3 {
-            font-size: 18px;
+            font-size: 20px;
+            margin: 10px 0;
+            color: #000;
+        }
+
+        .precio {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primario);
             margin: 10px 0;
         }
 
-        .btn-whatsapp {
-            display: block;
-            background: #25d366;
+        .descripcion {
+            font-size: 14px;
+            color: #64748b;
+            text-align: justify; /* TEXTO JUSTIFICADO */
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .btn-wa {
+            background: var(--secundario);
             color: white;
             text-decoration: none;
-            padding: 10px;
-            border-radius: 10px;
+            padding: 12px;
+            border-radius: 12px;
             font-weight: bold;
-            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             transition: 0.3s;
         }
 
-        .btn-whatsapp:hover {
-            background: #128c7e;
+        .btn-wa:hover {
+            filter: brightness(0.9);
+            transform: scale(1.02);
+        }
+
+        /* BOTÓN FLOTANTE */
+        .float-wa {
+            position: fixed;
+            width: 65px;
+            height: 65px;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--secundario);
+            color: white;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 35px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .float-wa:hover {
+            transform: scale(1.1) rotate(10deg);
         }
 
         footer {
             text-align: center;
-            padding: 40px;
-            color: #64748b;
+            padding: 60px 20px;
+            background: #fff;
+            margin-top: 50px;
+            color: #94a3b8;
+        }
+
+        /* Animación para el buscador */
+        .hidden { display: none !important; }
+
+        @media (max-width: 600px) {
+            .logo { font-size: 2rem; }
+            .float-wa { width: 55px; height: 55px; font-size: 30px; bottom: 20px; right: 20px; }
         }
     </style>
 </head>
@@ -151,101 +215,125 @@
 
     <header>
         <h1 class="logo">INVERSIONES COLKA</h1>
-        <p>Tu aliado en tecnología móvil</p>
+        <p class="slogan">Especialistas en Tecnología y Accesorios Móviles</p>
     </header>
 
-    <div class="search-container">
-        <input type="text" id="buscador" placeholder="🔎 Busca audífonos, celulares, cargadores..." onkeyup="filtrar()">
+    <div class="search-box">
+        <input type="text" id="buscador" placeholder="🔎 ¿Qué accesorio buscas hoy?" onkeyup="filtrar()">
     </div>
 
     <div class="container">
-        <div class="categorias-bar">
-            <button class="cat-btn active" onclick="filtrarCategoria('Todos')">Todos</button>
-            <button class="cat-btn" onclick="filtrarCategoria('Equipos')">Equipos</button>
-            <button class="cat-btn" onclick="filtrarCategoria('Carga')">Carga</button>
-            <button class="cat-btn" onclick="filtrarCategoria('Audio')">Audio</button>
-            <button class="cat-btn" onclick="filtrarCategoria('Proteccion')">Protección</button>
+        <div class="categorias">
+            <button class="cat-btn active" onclick="filtrarCategoria('Todos', this)">Todos</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Equipos', this)">Celulares</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Audio', this)">Audio</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Carga', this)">Cargadores</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Proteccion', this)">Protectores</button>
         </div>
 
         <div class="grid" id="lista-productos">
-            <div class="card" data-nombre="celular xiaomi samsung iphone" data-cat="Equipos">
+            <div class="card" data-nombre="celular xiaomi samsung iphone motorola" data-cat="Equipos">
                 <i class="fas fa-mobile-alt"></i>
-                <h3>Celulares</h3>
-                <p>Equipos nuevos y seminuevos.</p>
-                <a href="https://wa.me/51910457625?text=Info%20sobre%20celulares" class="btn-whatsapp">Consultar</a>
+                <h3>Smartphones</h3>
+                <div class="precio">S/ 450.00</div>
+                <p class="descripcion">Contamos con las mejores marcas del mercado: Xiaomi, Samsung, Motorola e iPhone. Equipos con garantía real y servicio técnico especializado.</p>
+                <a href="https://wa.me/51910457625?text=Hola%20Colka,%20quiero%20info%20sobre%20Celulares" class="btn-wa" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Consultar
+                </a>
             </div>
 
-            <div class="card" data-nombre="audifonos bluetooth parlantes" data-cat="Audio">
-                <i class="fas fa-headphones"></i>
-                <h3>Audífonos</h3>
-                <p>Bluetooth y originales.</p>
-                <a href="https://wa.me/51910457625?text=Info%20sobre%20audifonos" class="btn-whatsapp">Consultar</a>
+            <div class="card" data-nombre="audifonos bluetooth inalambricos gamer" data-cat="Audio">
+                <i class="fas fa-headset"></i>
+                <h3>Audífonos BT</h3>
+                <div class="precio">S/ 45.00</div>
+                <p class="descripcion">Audífonos inalámbricos de alta fidelidad. Gran duración de batería, cancelación de ruido y diseño ergonómico para mayor comodidad.</p>
+                <a href="https://wa.me/51910457625?text=Hola%20Colka,%20quiero%20info%20sobre%20Audifonos" class="btn-wa" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Consultar
+                </a>
             </div>
 
-            <div class="card" data-nombre="cargador cable carga rapida" data-cat="Carga">
-                <i class="fas fa-bolt"></i>
+            <div class="card" data-nombre="cargador tipo c lightning carga rapida" data-cat="Carga">
+                <i class="fas fa-plug"></i>
                 <h3>Cargadores</h3>
-                <p>Carga rápida y certificados.</p>
-                <a href="https://wa.me/51910457625?text=Info%20sobre%20cargadores" class="btn-whatsapp">Consultar</a>
+                <div class="precio">S/ 35.00</div>
+                <p class="descripcion">Cargadores de carga rápida de 20W, 33W y 67W. Cables certificados para proteger la vida útil de tu batería. Conexión estable y segura.</p>
+                <a href="https://wa.me/51910457625?text=Hola%20Colka,%20quiero%20info%20sobre%20Cargadores" class="btn-wa" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Consultar
+                </a>
             </div>
 
-            <div class="card" data-nombre="fibra de vidrio mica protector" data-cat="Proteccion">
-                <i class="fas fa-shield-alt"></i>
+            <div class="card" data-nombre="fibra de vidrio mica protector pantalla" data-cat="Proteccion">
+                <i class="fas fa-shield-virus"></i>
                 <h3>Fibra de Vidrio</h3>
-                <p>Protección extrema de pantalla.</p>
-                <a href="https://wa.me/51910457625?text=Info%20sobre%20micas" class="btn-whatsapp">Consultar</a>
+                <div class="precio">S/ 15.00</div>
+                <p class="descripcion">Protege tu pantalla contra golpes y caídas extremas. Nuestra fibra de vidrio es ultra resistente y mantiene la nitidez original del equipo.</p>
+                <a href="https://wa.me/51910457625?text=Hola%20Colka,%20quiero%20info%20sobre%20Fibra%20de%20Vidrio" class="btn-wa" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Consultar
+                </a>
             </div>
 
-            <div class="card" data-nombre="carcasa protector case" data-cat="Proteccion">
-                <i class="fas fa-mobile"></i>
-                <h3>Carcasas</h3>
-                <p>Protectores antigolpes.</p>
-                <a href="https://wa.me/51910457625?text=Info%20sobre%20carcasas" class="btn-whatsapp">Consultar</a>
-            </div>
-
-            <div class="card" data-nombre="parlante sonido radio" data-cat="Audio">
+            <div class="card" data-nombre="parlante bluetooth sonido potente radio" data-cat="Audio">
                 <i class="fas fa-volume-up"></i>
                 <h3>Parlantes</h3>
-                <p>Sonido potente y portátiles.</p>
-                <a href="https://wa.me/51910457625?text=Info%20sobre%20parlantes" class="btn-whatsapp">Consultar</a>
+                <div class="precio">S/ 85.00</div>
+                <p class="descripcion">Lleva la música a todas partes con nuestros parlantes Bluetooth potentes. Resistentes al agua, con luces LED y bajos profundos.</p>
+                <a href="https://wa.me/51910457625?text=Hola%20Colka,%20quiero%20info%20sobre%20Parlantes" class="btn-wa" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Consultar
+                </a>
+            </div>
+
+            <div class="card" data-nombre="carcasa case protector funda silicona" data-cat="Proteccion">
+                <i class="fas fa-mobile"></i>
+                <h3>Carcasas / Cases</h3>
+                <div class="precio">S/ 20.00</div>
+                <p class="descripcion">Variedad de diseños y colores. Cases de silicona, cuero y antigolpes para todos los modelos de celular. Dale estilo y protección a tu móvil.</p>
+                <a href="https://wa.me/51910457625?text=Hola%20Colka,%20quiero%20info%20sobre%20Carcasas" class="btn-wa" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Consultar
+                </a>
             </div>
         </div>
     </div>
 
+    <a href="https://wa.me/51910457625" class="float-wa" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
     <footer>
-        <p>INVERSIONES COLKA - Colcabamba, Perú</p>
+        <p><strong>INVERSIONES COLKA</strong></p>
+        <p>Expertos en tecnología móvil | Colcabamba - Tayacaja - Perú</p>
+        <p>© 2026 Todos los derechos reservados.</p>
     </footer>
 
     <script>
         function filtrar() {
-            let input = document.getElementById('buscador').value.toLowerCase();
-            let cards = document.getElementsByClassName('card');
+            let valorBusqueda = document.getElementById('buscador').value.toLowerCase();
+            let cards = document.querySelectorAll('.card');
 
-            for (let card of cards) {
+            cards.forEach(card => {
                 let nombre = card.getAttribute('data-nombre');
-                if (nombre.includes(input)) {
-                    card.style.display = "block";
+                if (nombre.includes(valorBusqueda)) {
+                    card.classList.remove('hidden');
                 } else {
-                    card.style.display = "none";
+                    card.classList.add('hidden');
                 }
-            }
+            });
         }
 
-        function filtrarCategoria(categoria) {
-            let cards = document.getElementsByClassName('card');
-            let btns = document.getElementsByClassName('cat-btn');
+        function filtrarCategoria(categoria, btn) {
+            let cards = document.querySelectorAll('.card');
+            let btns = document.querySelectorAll('.cat-btn');
 
-            for (let btn of btns) btn.classList.remove('active');
-            event.target.classList.add('active');
+            btns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
 
-            for (let card of cards) {
+            cards.forEach(card => {
                 let cat = card.getAttribute('data-cat');
                 if (categoria === 'Todos' || cat === categoria) {
-                    card.style.display = "block";
+                    card.classList.remove('hidden');
                 } else {
-                    card.style.display = "none";
+                    card.classList.add('hidden');
                 }
-            }
+            });
         }
     </script>
 </body>
