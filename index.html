@@ -3,167 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INVERSIONES COLKA | Tech Store</title>
+    <title>INVERSIONES COLKA | Tienda Tecnológica</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #00d2ff; /* Azul neón */
-            --accent: #9d50bb;  /* Morado neón */
-            --bg: #0f172a;      /* Fondo azul muy oscuro */
-            --card: #1e293b;    /* Color de tarjetas */
+            --primario: #1b4b8a;
+            --secundario: #00d2ff;
+            --fondo: #f8fafc;
+            --texto: #1e293b;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            background-color: var(--bg);
-            color: #f8fafc;
-            line-height: 1.6;
+            background-color: var(--fondo);
+            color: var(--texto);
         }
 
-        /* HEADER IMPACTANTE */
+        /* HEADER CLARO */
         header {
-            padding: 60px 20px;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background: white;
+            padding: 30px 20px;
             text-align: center;
-            border-bottom: 2px solid var(--primary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
         .logo {
-            font-size: 3rem;
-            font-weight: 900;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primario);
             margin: 0;
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
             letter-spacing: -1px;
         }
 
-        .slogan {
-            font-size: 1.1rem;
-            color: #94a3b8;
-            margin-top: 10px;
-        }
-
-        /* BOTONES DE CONTACTO FLOTANTES */
-        .contact-bar {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: -25px;
-        }
-
-        .btn-glass {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 12px 25px;
-            border-radius: 50px;
-            text-decoration: none;
-            color: white;
-            font-weight: bold;
-            border: 1px solid rgba(255,255,255,0.2);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: 0.3s;
-        }
-
-        .btn-glass:hover {
-            background: var(--primary);
-            box-shadow: 0 0 20px var(--primary);
-            color: #0f172a;
-        }
-
-        /* GRID DE PRODUCTOS */
-        .container {
-            max-width: 1100px;
-            margin: 50px auto;
+        /* BUSCADOR */
+        .search-container {
+            max-width: 600px;
+            margin: -25px auto 30px;
             padding: 0 20px;
         }
 
-        h2 {
-            font-size: 1.8rem;
-            margin-bottom: 30px;
+        #buscador {
+            width: 100%;
+            padding: 15px 25px;
+            border-radius: 50px;
+            border: 2px solid #e2e8f0;
+            font-size: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            outline: none;
+            transition: 0.3s;
+        }
+
+        #buscador:focus {
+            border-color: var(--primario);
+        }
+
+        /* CATEGORÍAS */
+        .categorias-bar {
             display: flex;
-            align-items: center;
+            justify-content: center;
             gap: 10px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+            padding: 10px;
+        }
+
+        .cat-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: 0.3s;
+        }
+
+        .cat-btn:hover, .cat-btn.active {
+            background: var(--primario);
+            color: white;
+            border-color: var(--primario);
+        }
+
+        /* GRILLA DE PRODUCTOS */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
         }
 
         .card {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
             text-align: center;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: 0.4s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 4px;
-            background: linear-gradient(to right, var(--primary), var(--accent));
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            transition: 0.3s;
+            border: 1px solid #f1f5f9;
         }
 
         .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
         }
 
         .card i {
-            font-size: 50px;
-            margin-bottom: 20px;
-            background: linear-gradient(to bottom, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 45px;
+            color: var(--primario);
+            margin-bottom: 15px;
         }
 
-        .price-tag {
-            display: inline-block;
-            background: rgba(0, 210, 255, 0.1);
-            color: var(--primary);
-            padding: 5px 15px;
-            border-radius: 8px;
+        .card h3 {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .btn-whatsapp {
+            display: block;
+            background: #25d366;
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 10px;
             font-weight: bold;
             margin-top: 15px;
-        }
-
-        .buy-now {
-            display: block;
-            margin-top: 20px;
-            background: white;
-            color: var(--bg);
-            text-decoration: none;
-            padding: 12px;
-            border-radius: 12px;
-            font-weight: bold;
             transition: 0.3s;
         }
 
-        .buy-now:hover {
-            background: var(--primary);
-            color: white;
+        .btn-whatsapp:hover {
+            background: #128c7e;
         }
 
         footer {
             text-align: center;
-            padding: 60px 20px;
-            color: #475569;
-            font-size: 14px;
-        }
-
-        @media (max-width: 600px) {
-            .logo { font-size: 2.2rem; }
+            padding: 40px;
+            color: #64748b;
         }
     </style>
 </head>
@@ -171,53 +151,102 @@
 
     <header>
         <h1 class="logo">INVERSIONES COLKA</h1>
-        <p class="slogan">Premium Tech & Mobile Accessories</p>
+        <p>Tu aliado en tecnología móvil</p>
     </header>
 
-    <div class="contact-bar">
-        <a href="https://wa.me/51910457625" class="btn-glass">
-            <i class="fab fa-whatsapp"></i> WhatsApp
-        </a>
-        <a href="#" class="btn-glass">
-            <i class="fab fa-facebook"></i> Facebook
-        </a>
+    <div class="search-container">
+        <input type="text" id="buscador" placeholder="🔎 Busca audífonos, celulares, cargadores..." onkeyup="filtrar()">
     </div>
 
     <div class="container">
-        <h2><i class="fas fa-bolt" style="color:var(--primary)"></i> Destacados de la Semana</h2>
-        <div class="grid">
-            
-            <div class="card">
+        <div class="categorias-bar">
+            <button class="cat-btn active" onclick="filtrarCategoria('Todos')">Todos</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Equipos')">Equipos</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Carga')">Carga</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Audio')">Audio</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Proteccion')">Protección</button>
+        </div>
+
+        <div class="grid" id="lista-productos">
+            <div class="card" data-nombre="celular xiaomi samsung iphone" data-cat="Equipos">
                 <i class="fas fa-mobile-alt"></i>
-                <h3>Smartphones</h3>
-                <p>Las mejores marcas: Samsung, Xiaomi, iPhone y más.</p>
-                <span class="price-tag">Garantía Real</span>
-                <a href="https://wa.me/51910457625?text=Info%20sobre%20celulares" class="buy-now">Consultar Modelos</a>
+                <h3>Celulares</h3>
+                <p>Equipos nuevos y seminuevos.</p>
+                <a href="https://wa.me/51910457625?text=Info%20sobre%20celulares" class="btn-whatsapp">Consultar</a>
             </div>
 
-            <div class="card">
-                <i class="fas fa-shield-virus"></i>
-                <h3>Protección Total</h3>
-                <p>Fibra de vidrio, protectores 360° y carcasas de alto impacto.</p>
-                <span class="price-tag">Instalación Gratis</span>
-                <a href="https://wa.me/51910457625?text=Info%20sobre%20protectores" class="buy-now">Ver Catálogo</a>
+            <div class="card" data-nombre="audifonos bluetooth parlantes" data-cat="Audio">
+                <i class="fas fa-headphones"></i>
+                <h3>Audífonos</h3>
+                <p>Bluetooth y originales.</p>
+                <a href="https://wa.me/51910457625?text=Info%20sobre%20audifonos" class="btn-whatsapp">Consultar</a>
             </div>
 
-            <div class="card">
-                <i class="fas fa-headphones-alt"></i>
-                <h3>Audio & Carga</h3>
-                <p>Audífonos Bluetooth, parlantes y cargadores carga rápida.</p>
-                <span class="price-tag">Originales</span>
-                <a href="https://wa.me/51910457625?text=Info%20sobre%20audio" class="buy-now">Pedir Ahora</a>
+            <div class="card" data-nombre="cargador cable carga rapida" data-cat="Carga">
+                <i class="fas fa-bolt"></i>
+                <h3>Cargadores</h3>
+                <p>Carga rápida y certificados.</p>
+                <a href="https://wa.me/51910457625?text=Info%20sobre%20cargadores" class="btn-whatsapp">Consultar</a>
             </div>
 
+            <div class="card" data-nombre="fibra de vidrio mica protector" data-cat="Proteccion">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Fibra de Vidrio</h3>
+                <p>Protección extrema de pantalla.</p>
+                <a href="https://wa.me/51910457625?text=Info%20sobre%20micas" class="btn-whatsapp">Consultar</a>
+            </div>
+
+            <div class="card" data-nombre="carcasa protector case" data-cat="Proteccion">
+                <i class="fas fa-mobile"></i>
+                <h3>Carcasas</h3>
+                <p>Protectores antigolpes.</p>
+                <a href="https://wa.me/51910457625?text=Info%20sobre%20carcasas" class="btn-whatsapp">Consultar</a>
+            </div>
+
+            <div class="card" data-nombre="parlante sonido radio" data-cat="Audio">
+                <i class="fas fa-volume-up"></i>
+                <h3>Parlantes</h3>
+                <p>Sonido potente y portátiles.</p>
+                <a href="https://wa.me/51910457625?text=Info%20sobre%20parlantes" class="btn-whatsapp">Consultar</a>
+            </div>
         </div>
     </div>
 
     <footer>
-        <p>INVERSIONES COLKA &copy; 2026</p>
-        <p>Expertos en tecnología móvil | Colcabamba, Perú</p>
+        <p>INVERSIONES COLKA - Colcabamba, Perú</p>
     </footer>
 
+    <script>
+        function filtrar() {
+            let input = document.getElementById('buscador').value.toLowerCase();
+            let cards = document.getElementsByClassName('card');
+
+            for (let card of cards) {
+                let nombre = card.getAttribute('data-nombre');
+                if (nombre.includes(input)) {
+                    card.style.display = "block";
+                } else {
+                    card.style.display = "none";
+                }
+            }
+        }
+
+        function filtrarCategoria(categoria) {
+            let cards = document.getElementsByClassName('card');
+            let btns = document.getElementsByClassName('cat-btn');
+
+            for (let btn of btns) btn.classList.remove('active');
+            event.target.classList.add('active');
+
+            for (let card of cards) {
+                let cat = card.getAttribute('data-cat');
+                if (categoria === 'Todos' || cat === categoria) {
+                    card.style.display = "block";
+                } else {
+                    card.style.display = "none";
+                }
+            }
+        }
+    </script>
 </body>
 </html>
