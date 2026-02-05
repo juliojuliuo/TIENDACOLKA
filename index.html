@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INVERSIONES COLKA | Catálogo 2026</title>
+    <title>INVERSIONES COLKA | Catálogo Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --primario: #1b4b8a; --verde: #25d366; --fondo: #f4f7f6; --oferta: #ff3e3e; }
@@ -12,13 +12,45 @@
         header { background: white; padding: 25px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .logo { font-size: 2.2rem; font-weight: 900; color: var(--primario); margin: 0; text-transform: uppercase; }
 
-        .search-area { max-width: 600px; margin: 20px auto; padding: 0 20px; position: sticky; top: 10px; z-index: 100; }
-        #buscador { width: 100%; padding: 15px 25px; border-radius: 50px; border: 2px solid var(--primario); box-shadow: 0 5px 15px rgba(0,0,0,0.1); outline: none; font-size: 16px; }
+        /* BUSCADOR */
+        .search-area { max-width: 600px; margin: 20px auto 10px; padding: 0 20px; }
+        #buscador { width: 100%; padding: 15px 25px; border-radius: 50px; border: 2px solid #ddd; box-shadow: 0 5px 15px rgba(0,0,0,0.05); outline: none; font-size: 16px; transition: 0.3s; }
+        #buscador:focus { border-color: var(--primario); }
+
+        /* BARRA DE CATEGORÍAS */
+        .categorias-bar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px auto;
+            overflow-x: auto;
+            padding: 10px;
+            max-width: 1000px;
+            scrollbar-width: none;
+        }
+        .categorias-bar::-webkit-scrollbar { display: none; }
+        
+        .cat-btn {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 10px 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            white-space: nowrap;
+            transition: 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .cat-btn.active, .cat-btn:hover {
+            background: var(--primario);
+            color: white;
+            border-color: var(--primario);
+        }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
 
-        /* ESTILO DE TARJETA */
+        /* TARJETAS */
         .card { background: white; border-radius: 15px; overflow: hidden; border: 1px solid #eee; transition: 0.3s; display: flex; flex-direction: column; position: relative; }
         .card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         
@@ -28,16 +60,16 @@
         .img-placeholder i { font-size: 50px; color: #ddd; }
 
         .info { padding: 15px; flex-grow: 1; }
-        .info h3 { margin: 0; font-size: 17px; color: #111; height: 40px; overflow: hidden; }
-        .info .cat { font-size: 11px; color: var(--primario); font-weight: bold; text-transform: uppercase; }
-        .precio { font-size: 20px; font-weight: 800; color: #222; margin: 8px 0; }
+        .info h3 { margin: 0; font-size: 17px; color: #111; height: 45px; overflow: hidden; text-align: left; }
+        .info .cat-label { font-size: 10px; color: var(--primario); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .precio { font-size: 22px; font-weight: 800; color: var(--primario); margin: 10px 0; text-align: left; }
 
         .btn-wa { background: var(--verde); color: white; text-decoration: none; padding: 12px; text-align: center; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
         .btn-wa:hover { filter: brightness(0.9); }
 
         .float-wa { position: fixed; width: 60px; height: 60px; bottom: 30px; right: 30px; background: var(--verde); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-decoration: none; z-index: 1000; }
 
-        footer { text-align: center; padding: 40px; background: #333; color: white; margin-top: 50px; }
+        footer { text-align: center; padding: 40px; background: #fff; border-top: 1px solid #eee; margin-top: 50px; color: #888; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -48,123 +80,91 @@
     </header>
 
     <div class="search-area">
-        <input type="text" id="buscador" placeholder="🔎 Busca por marca o producto (ej. Xiaomi, iPhone, Carga...)" onkeyup="filtrar()">
+        <input type="text" id="buscador" placeholder="🔎 Busca por nombre o marca..." onkeyup="filtrar()">
+    </div>
+
+    <div class="categorias-bar">
+        <button class="cat-btn active" onclick="filtrarCategoria('Todos', this)">Todos</button>
+        <button class="cat-btn" onclick="filtrarCategoria('Equipos', this)">Celulares</button>
+        <button class="cat-btn" onclick="filtrarCategoria('Audio', this)">Audio</button>
+        <button class="cat-btn" onclick="filtrarCategoria('Carga', this)">Cargadores</button>
+        <button class="cat-btn" onclick="filtrarCategoria('Proteccion', this)">Protección</button>
     </div>
 
     <div class="container">
         <div class="grid" id="lista">
             
-            <div class="card" data-tags="celular samsung galaxy a54 smartphone">
+            <div class="card" data-nombre="samsung galaxy a54 smartphone celular" data-cat="Equipos">
                 <span class="badge">NUEVO</span>
                 <div class="img-placeholder"><i class="fas fa-mobile-alt"></i></div>
                 <div class="info">
-                    <span class="cat">Celulares</span>
+                    <span class="cat-label">Celulares</span>
                     <h3>Samsung Galaxy A54 5G</h3>
                     <div class="precio">S/ 1,250.00</div>
                 </div>
-                <a href="https://wa.me/51910457625?text=Info%20Samsung%20A54" class="btn-wa"><i class="fab fa-whatsapp"></i> Pedir Info</a>
+                <a href="https://wa.me/51910457625?text=Info%20Samsung%20A54" class="btn-wa"><i class="fab fa-whatsapp"></i> Consultar</a>
             </div>
 
-            <div class="card" data-tags="celular xiaomi redmi note 12 smartphone">
-                <div class="img-placeholder"><i class="fas fa-mobile-alt"></i></div>
-                <div class="info">
-                    <span class="cat">Celulares</span>
-                    <h3>Xiaomi Redmi Note 12</h3>
-                    <div class="precio">S/ 890.00</div>
-                </div>
-                <a href="https://wa.me/51910457625?text=Info%20Redmi%20Note%2012" class="btn-wa"><i class="fab fa-whatsapp"></i> Pedir Info</a>
-            </div>
-
-            <div class="card" data-tags="celular iphone 13 apple smartphone">
+            <div class="card" data-nombre="iphone 13 apple smartphone celular" data-cat="Equipos">
                 <span class="badge">OFERTA</span>
                 <div class="img-placeholder"><i class="fas fa-mobile-alt"></i></div>
                 <div class="info">
-                    <span class="cat">Celulares</span>
+                    <span class="cat-label">Celulares</span>
                     <h3>iPhone 13 128GB</h3>
                     <div class="precio">S/ 2,800.00</div>
                 </div>
-                <a href="https://wa.me/51910457625?text=Info%20iPhone%2013" class="btn-wa"><i class="fab fa-whatsapp"></i> Pedir Info</a>
+                <a href="https://wa.me/51910457625?text=Info%20iPhone%2013" class="btn-wa"><i class="fab fa-whatsapp"></i> Consultar</a>
             </div>
 
-            <div class="card" data-tags="cargador tipo c carga rapida 33w xiaomi">
-                <div class="img-placeholder"><i class="fas fa-bolt"></i></div>
-                <div class="info">
-                    <span class="cat">Carga</span>
-                    <h3>Cargador Xiaomi 33W Original</h3>
-                    <div class="precio">S/ 45.00</div>
-                </div>
-                <a href="https://wa.me/51910457625?text=Quiero%20Cargador%20Xiaomi%2033W" class="btn-wa"><i class="fab fa-whatsapp"></i> Comprar</a>
-            </div>
-
-            <div class="card" data-tags="cargador iphone lightning apple 20w">
-                <div class="img-placeholder"><i class="fas fa-bolt"></i></div>
-                <div class="info">
-                    <span class="cat">Carga</span>
-                    <h3>Cargador iPhone 20W Certificado</h3>
-                    <div class="precio">S/ 55.00</div>
-                </div>
-                <a href="https://wa.me/51910457625?text=Quiero%20Cargador%20iPhone%2020W" class="btn-wa"><i class="fab fa-whatsapp"></i> Comprar</a>
-            </div>
-
-            <div class="card" data-tags="audifonos lenovo xt80 inalambricos bluetooth">
+            <div class="card" data-nombre="audifonos lenovo xt80 bluetooth inalambricos" data-cat="Audio">
                 <div class="img-placeholder"><i class="fas fa-headset"></i></div>
                 <div class="info">
-                    <span class="cat">Audio</span>
+                    <span class="cat-label">Audio</span>
                     <h3>Audífonos Lenovo XT80 Pro</h3>
                     <div class="precio">S/ 65.00</div>
                 </div>
                 <a href="https://wa.me/51910457625?text=Quiero%20Audifonos%20Lenovo" class="btn-wa"><i class="fab fa-whatsapp"></i> Comprar</a>
             </div>
 
-            <div class="card" data-tags="parlante jbl flip bluetooth sonido">
+            <div class="card" data-nombre="parlante bluetooth jbl sonido potente" data-cat="Audio">
                 <div class="img-placeholder"><i class="fas fa-volume-up"></i></div>
                 <div class="info">
-                    <span class="cat">Audio</span>
+                    <span class="cat-label">Audio</span>
                     <h3>Parlante JBL Flip 6 (Replica)</h3>
                     <div class="precio">S/ 95.00</div>
                 </div>
                 <a href="https://wa.me/51910457625?text=Info%20Parlante%20JBL" class="btn-wa"><i class="fab fa-whatsapp"></i> Comprar</a>
             </div>
 
-            <div class="card" data-tags="fibra de vidrio mica pantalla samsung xiaomi">
+            <div class="card" data-nombre="cargador xiaomi 33w original tipo c carga rapida" data-cat="Carga">
+                <div class="img-placeholder"><i class="fas fa-bolt"></i></div>
+                <div class="info">
+                    <span class="cat-label">Carga</span>
+                    <h3>Cargador Xiaomi 33W Original</h3>
+                    <div class="precio">S/ 45.00</div>
+                </div>
+                <a href="https://wa.me/51910457625?text=Quiero%20Cargador%20Xiaomi%2033W" class="btn-wa"><i class="fab fa-whatsapp"></i> Comprar</a>
+            </div>
+
+            <div class="card" data-nombre="fibra de vidrio mica protector pantalla" data-cat="Proteccion">
                 <span class="badge">TOP</span>
                 <div class="img-placeholder"><i class="fas fa-shield-alt"></i></div>
                 <div class="info">
-                    <span class="cat">Protección</span>
-                    <h3>Mica de Vidrio 9D (Todos los modelos)</h3>
+                    <span class="cat-label">Protección</span>
+                    <h3>Mica de Vidrio 9D Premium</h3>
                     <div class="precio">S/ 15.00</div>
                 </div>
                 <a href="https://wa.me/51910457625?text=Mica%20de%20Vidrio" class="btn-wa"><i class="fab fa-whatsapp"></i> Pedir</a>
             </div>
 
-            <div class="card" data-tags="carcasa case protector silicona iphone">
+            <div class="card" data-nombre="carcasa case protector funda silicona" data-cat="Proteccion">
                 <div class="img-placeholder"><i class="fas fa-mobile"></i></div>
                 <div class="info">
-                    <span class="cat">Protección</span>
+                    <span class="cat-label">Protección</span>
                     <h3>Carcasa Silicona Premium</h3>
                     <div class="precio">S/ 25.00</div>
                 </div>
                 <a href="https://wa.me/51910457625?text=Info%20Carcasas" class="btn-wa"><i class="fab fa-whatsapp"></i> Ver Diseños</a>
-            </div>
-
-            <div class="card" data-tags="memoria micro sd 64gb kingston">
-                <div class="img-placeholder"><i class="fas fa-sd-card"></i></div>
-                <div class="info">
-                    <span class="cat">Accesorios</span>
-                    <h3>Micro SD 64GB Kingston</h3>
-                    <div class="precio">S/ 35.00</div>
-                </div>
-                <a href="https://wa.me/51910457625?text=Micro%20SD%2064GB" class="btn-wa"><i class="fab fa-whatsapp"></i> Comprar</a>
-            </div>
-
-            <div class="card" data-tags="reloj inteligente smartwatch t800 ultra">
-                <div class="img-placeholder"><i class="fas fa-clock"></i></div>
-                <div class="info">
-                    <span class="cat">Gadgets</span>
-                    <h3>Smartwatch T800 Ultra</h3>
-                    <div class="precio">S/ 85.00</div>
-                </div>
-                <a href="https://wa.me/51910457625?text=Info%20Smartwatch" class="btn-wa"><i class="fab fa-whatsapp"></i> Pedir</a>
             </div>
 
         </div>
@@ -174,16 +174,37 @@
 
     <footer>
         <p><strong>INVERSIONES COLKA 2026</strong></p>
-        <p>Envíos a todo Colcabamba y Tayacaja</p>
+        <p>Colcabamba - Tayacaja - Perú</p>
     </footer>
 
     <script>
+        // Función para el buscador por texto
         function filtrar() {
             let busqueda = document.getElementById('buscador').value.toLowerCase();
             let items = document.querySelectorAll('.card');
             items.forEach(item => {
-                let tags = item.getAttribute('data-tags');
-                item.classList.toggle('hidden', !tags.includes(busqueda));
+                let nombre = item.getAttribute('data-nombre');
+                item.classList.toggle('hidden', !nombre.includes(busqueda));
+            });
+        }
+
+        // Función para filtrar por botones de categoría
+        function filtrarCategoria(cat, btn) {
+            let items = document.querySelectorAll('.card');
+            let btns = document.querySelectorAll('.cat-btn');
+
+            // Cambiar color del botón activo
+            btns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Filtrar productos
+            items.forEach(item => {
+                let itemCat = item.getAttribute('data-cat');
+                if (cat === 'Todos' || itemCat === cat) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
             });
         }
     </script>
