@@ -3,336 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INVERSIONES COLKA | Tienda Tecnológica</title>
+    <title>INVERSIONES COLKA | Catálogo 2026</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --primario: #1b4b8a; /* Azul profesional */
-            --secundario: #25d366; /* Verde WhatsApp */
-            --fondo: #f1f5f9;
-            --texto: #1e293b;
-            --blanco: #ffffff;
-        }
+        :root { --primario: #1b4b8a; --verde: #25d366; --fondo: #f4f7f6; --oferta: #ff3e3e; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--fondo); color: #333; }
+        
+        header { background: white; padding: 25px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .logo { font-size: 2.2rem; font-weight: 900; color: var(--primario); margin: 0; text-transform: uppercase; }
 
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            background-color: var(--fondo);
-            color: var(--texto);
-        }
+        .search-area { max-width: 600px; margin: 20px auto; padding: 0 20px; position: sticky; top: 10px; z-index: 100; }
+        #buscador { width: 100%; padding: 15px 25px; border-radius: 50px; border: 2px solid var(--primario); box-shadow: 0 5px 15px rgba(0,0,0,0.1); outline: none; font-size: 16px; }
 
-        /* HEADER */
-        header {
-            background: var(--blanco);
-            padding: 40px 20px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
 
-        .logo {
-            font-size: 2.8rem;
-            font-weight: 900;
-            color: var(--primario);
-            margin: 0;
-            letter-spacing: -2px;
-            text-transform: uppercase;
-        }
+        /* ESTILO DE TARJETA */
+        .card { background: white; border-radius: 15px; overflow: hidden; border: 1px solid #eee; transition: 0.3s; display: flex; flex-direction: column; position: relative; }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        
+        .badge { position: absolute; top: 10px; right: 10px; background: var(--oferta); color: white; padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; z-index: 5; }
 
-        .slogan {
-            color: var(--gris);
-            font-size: 1rem;
-            margin-top: 5px;
-            font-weight: 400;
-        }
+        .img-placeholder { height: 160px; background: #f9f9f9; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #f0f0f0; }
+        .img-placeholder i { font-size: 50px; color: #ddd; }
 
-        /* BUSCADOR */
-        .search-box {
-            max-width: 600px;
-            margin: -25px auto 30px;
-            padding: 0 20px;
-            position: relative;
-            z-index: 10;
-        }
+        .info { padding: 15px; flex-grow: 1; }
+        .info h3 { margin: 0; font-size: 17px; color: #111; height: 40px; overflow: hidden; }
+        .info .cat { font-size: 11px; color: var(--primario); font-weight: bold; text-transform: uppercase; }
+        .precio { font-size: 20px; font-weight: 800; color: #222; margin: 8px 0; }
 
-        #buscador {
-            width: 100%;
-            padding: 18px 30px;
-            border-radius: 50px;
-            border: none;
-            font-size: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            outline: none;
-        }
+        .btn-wa { background: var(--verde); color: white; text-decoration: none; padding: 12px; text-align: center; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
+        .btn-wa:hover { filter: brightness(0.9); }
 
-        /* CATEGORÍAS */
-        .categorias {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 30px;
-            overflow-x: auto;
-            padding: 10px;
-            scrollbar-width: none;
-        }
+        .float-wa { position: fixed; width: 60px; height: 60px; bottom: 30px; right: 30px; background: var(--verde); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-decoration: none; z-index: 1000; }
 
-        .cat-btn {
-            background: var(--blanco);
-            border: 2px solid transparent;
-            padding: 10px 20px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            white-space: nowrap;
-        }
-
-        .cat-btn.active, .cat-btn:hover {
-            background: var(--primario);
-            color: white;
-        }
-
-        /* CUADRÍCULA DE PRODUCTOS */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 25px;
-        }
-
-        .card {
-            background: var(--blanco);
-            border-radius: 20px;
-            padding: 25px;
-            text-align: center;
-            transition: 0.3s;
-            border: 1px solid #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 30px rgba(0,0,0,0.1);
-            border-color: var(--primario);
-        }
-
-        .card i {
-            font-size: 50px;
-            color: var(--primario);
-            margin-bottom: 20px;
-        }
-
-        .card h3 {
-            font-size: 20px;
-            margin: 10px 0;
-            color: #000;
-        }
-
-        .precio {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--primario);
-            margin: 10px 0;
-        }
-
-        .descripcion {
-            font-size: 14px;
-            color: #64748b;
-            text-align: justify; /* TEXTO JUSTIFICADO */
-            line-height: 1.5;
-            margin-bottom: 20px;
-        }
-
-        .btn-wa {
-            background: var(--secundario);
-            color: white;
-            text-decoration: none;
-            padding: 12px;
-            border-radius: 12px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: 0.3s;
-        }
-
-        .btn-wa:hover {
-            filter: brightness(0.9);
-            transform: scale(1.02);
-        }
-
-        /* BOTÓN FLOTANTE */
-        .float-wa {
-            position: fixed;
-            width: 65px;
-            height: 65px;
-            bottom: 30px;
-            right: 30px;
-            background-color: var(--secundario);
-            color: white;
-            border-radius: 50px;
-            text-align: center;
-            font-size: 35px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-
-        .float-wa:hover {
-            transform: scale(1.1) rotate(10deg);
-        }
-
-        footer {
-            text-align: center;
-            padding: 60px 20px;
-            background: #fff;
-            margin-top: 50px;
-            color: #94a3b8;
-        }
-
-        /* Animación para el buscador */
+        footer { text-align: center; padding: 40px; background: #333; color: white; margin-top: 50px; }
         .hidden { display: none !important; }
-
-        @media (max-width: 600px) {
-            .logo { font-size: 2rem; }
-            .float-wa { width: 55px; height: 55px; font-size: 30px; bottom: 20px; right: 20px; }
-        }
     </style>
 </head>
 <body>
 
     <header>
         <h1 class="logo">INVERSIONES COLKA</h1>
-        <p class="slogan">Especialistas en Tecnología y Accesorios Móviles</p>
     </header>
 
-    <div class="search-box">
-        <input type="text" id="buscador" placeholder="🔎 ¿Qué accesorio buscas hoy?" onkeyup="filtrar()">
+    <div class="search-area">
+        <input type="text" id="buscador" placeholder="🔎 Busca por marca o producto (ej. Xiaomi, iPhone, Carga...)" onkeyup="filtrar()">
     </div>
 
     <div class="container">
-        <div class="categorias">
-            <button class="cat-btn active" onclick="filtrarCategoria('Todos', this)">Todos</button>
-            <button class="cat-btn" onclick="filtrarCategoria('Equipos', this)">Celulares</button>
-            <button class="cat-btn" onclick="filtrarCategoria('Audio', this)">Audio</button>
-            <button class="cat-btn" onclick="filtrarCategoria('Carga', this)">Cargadores</button>
-            <button class="cat-btn" onclick="filtrarCategoria('Proteccion', this)">Protectores</button>
-        </div>
-
-        <div class="grid" id="lista-productos">
-            <div class="card" data-nombre="celular xiaomi samsung iphone motorola" data-cat="Equipos">
-                <i class="fas fa-mobile-alt"></i>
-                <h3>Smartphones</h3>
-                <div class="precio">S/ 450.00</div>
-                <p class="descripcion">Contamos con las mejores marcas del mercado: Xiaomi, Samsung, Motorola e iPhone. Equipos con garantía real y servicio técnico especializado.</p>
-                <a href="https://wa.me/51910457625?text=Hola%20Colka,%20quiero%20info%20sobre%20Celulares" class="btn-wa" target="_blank">
-                    <i class="fab fa-whatsapp"></i> Consultar
-                </a>
+        <div class="grid" id="lista">
+            
+            <div class="card" data-tags="celular samsung galaxy a54 smartphone">
+                <span class="badge">NUEVO</span>
+                <div class="img-placeholder"><i class="fas fa-mobile-alt"></i></div>
+                <div class="info">
+                    <span class="cat">Celulares</span>
+                    <h3>Samsung Galaxy A54 5G</h3>
+                    <div class="precio">S/ 1,250.00</div>
+                </div>
+                <a href="https://wa.me/51910457625?text=Info%20Samsung%20A54" class="btn-wa"><i class="fab fa-whatsapp"></i> Pedir Info</a>
             </div>
 
-            <div class="card" data-nombre="audifonos bluetooth inalambricos gamer" data-cat="Audio">
-                <i class="fas fa-headset"></i>
-                <h3>Audífonos BT</h3>
-                <div class="precio">S/ 45.00</div>
-                <p class="descripcion">Audífonos inalámbricos de alta fidelidad. Gran duración de batería, cancelación de ruido y diseño ergonómico para mayor comodidad.</p>
-                <a href="https://wa.me/51910457625?text=Hola%20Colka,%20quiero%20info%20sobre%20Audifonos" class="btn-wa" target="_blank">
-                    <i class="fab fa-whatsapp"></i> Consultar
-                </a>
+            <div class="card" data-tags="celular xiaomi redmi note 12 smartphone">
+                <div class="img-placeholder"><i class="fas fa-mobile-alt"></i></div>
+                <div class="info">
+                    <span class="cat">Celulares</span>
+                    <h3>Xiaomi Redmi Note 12</h3>
+                    <div class="precio">S/ 890.00</div>
+                </div>
+                <a href="https://wa.me/51910457625?text=Info%20Redmi%20Note%2012" class="btn-wa"><i class="fab fa-whatsapp"></i> Pedir Info</a>
             </div>
 
-            <div class="card" data-nombre="cargador tipo c lightning carga rapida" data-cat="Carga">
-                <i class="fas fa-plug"></i>
-                <h3>Cargadores</h3>
-                <div class="precio">S/ 35.00</div>
-                <p class="descripcion">Cargadores de carga rápida de 20W, 33W y 67W. Cables certificados para proteger la vida útil de tu batería. Conexión estable y segura.</p>
-                <a href="https://wa.me/51910457625?text=Hola%20Colka,%20quiero%20info%20sobre%20Cargadores" class="btn-wa" target="_blank">
-                    <i class="fab fa-whatsapp"></i> Consultar
-                </a>
+            <div class="card" data-tags="celular iphone 13 apple smartphone">
+                <span class="badge">OFERTA</span>
+                <div class="img-placeholder"><i class="fas fa-mobile-alt"></i></div>
+                <div class="info">
+                    <span class="cat">Celulares</span>
+                    <h3>iPhone 13 128GB</h3>
+                    <div class="precio">S/ 2,800.00</div>
+                </div>
+                <a href="https://wa.me/51910457625?text=Info%20iPhone%2013" class="btn-wa"><i class="fab fa-whatsapp"></i> Pedir Info</a>
             </div>
 
-            <div class="card" data-nombre="fibra de vidrio mica protector pantalla" data-cat="Proteccion">
-                <i class="fas fa-shield-virus"></i>
-                <h3>Fibra de Vidrio</h3>
-                <div class="precio">S/ 15.00</div>
-                <p class="descripcion">Protege tu pantalla contra golpes y caídas extremas. Nuestra fibra de vidrio es ultra resistente y mantiene la nitidez original del equipo.</p>
-                <a href="https://wa.me/51910457625?text=Hola%20Colka,%20quiero%20info%20sobre%20Fibra%20de%20Vidrio" class="btn-wa" target="_blank">
-                    <i class="fab fa-whatsapp"></i> Consultar
-                </a>
+            <div class="card" data-tags="cargador tipo c carga rapida 33w xiaomi">
+                <div class="img-placeholder"><i class="fas fa-bolt"></i></div>
+                <div class="info">
+                    <span class="cat">Carga</span>
+                    <h3>Cargador Xiaomi 33W Original</h3>
+                    <div class="precio">S/ 45.00</div>
+                </div>
+                <a href="https://wa.me/51910457625?text=Quiero%20Cargador%20Xiaomi%2033W" class="btn-wa"><i class="fab fa-whatsapp"></i> Comprar</a>
             </div>
 
-            <div class="card" data-nombre="parlante bluetooth sonido potente radio" data-cat="Audio">
-                <i class="fas fa-volume-up"></i>
-                <h3>Parlantes</h3>
-                <div class="precio">S/ 85.00</div>
-                <p class="descripcion">Lleva la música a todas partes con nuestros parlantes Bluetooth potentes. Resistentes al agua, con luces LED y bajos profundos.</p>
-                <a href="https://wa.me/51910457625?text=Hola%20Colka,%20quiero%20info%20sobre%20Parlantes" class="btn-wa" target="_blank">
-                    <i class="fab fa-whatsapp"></i> Consultar
-                </a>
+            <div class="card" data-tags="cargador iphone lightning apple 20w">
+                <div class="img-placeholder"><i class="fas fa-bolt"></i></div>
+                <div class="info">
+                    <span class="cat">Carga</span>
+                    <h3>Cargador iPhone 20W Certificado</h3>
+                    <div class="precio">S/ 55.00</div>
+                </div>
+                <a href="https://wa.me/51910457625?text=Quiero%20Cargador%20iPhone%2020W" class="btn-wa"><i class="fab fa-whatsapp"></i> Comprar</a>
             </div>
 
-            <div class="card" data-nombre="carcasa case protector funda silicona" data-cat="Proteccion">
-                <i class="fas fa-mobile"></i>
-                <h3>Carcasas / Cases</h3>
-                <div class="precio">S/ 20.00</div>
-                <p class="descripcion">Variedad de diseños y colores. Cases de silicona, cuero y antigolpes para todos los modelos de celular. Dale estilo y protección a tu móvil.</p>
-                <a href="https://wa.me/51910457625?text=Hola%20Colka,%20quiero%20info%20sobre%20Carcasas" class="btn-wa" target="_blank">
-                    <i class="fab fa-whatsapp"></i> Consultar
-                </a>
+            <div class="card" data-tags="audifonos lenovo xt80 inalambricos bluetooth">
+                <div class="img-placeholder"><i class="fas fa-headset"></i></div>
+                <div class="info">
+                    <span class="cat">Audio</span>
+                    <h3>Audífonos Lenovo XT80 Pro</h3>
+                    <div class="precio">S/ 65.00</div>
+                </div>
+                <a href="https://wa.me/51910457625?text=Quiero%20Audifonos%20Lenovo" class="btn-wa"><i class="fab fa-whatsapp"></i> Comprar</a>
             </div>
+
+            <div class="card" data-tags="parlante jbl flip bluetooth sonido">
+                <div class="img-placeholder"><i class="fas fa-volume-up"></i></div>
+                <div class="info">
+                    <span class="cat">Audio</span>
+                    <h3>Parlante JBL Flip 6 (Replica)</h3>
+                    <div class="precio">S/ 95.00</div>
+                </div>
+                <a href="https://wa.me/51910457625?text=Info%20Parlante%20JBL" class="btn-wa"><i class="fab fa-whatsapp"></i> Comprar</a>
+            </div>
+
+            <div class="card" data-tags="fibra de vidrio mica pantalla samsung xiaomi">
+                <span class="badge">TOP</span>
+                <div class="img-placeholder"><i class="fas fa-shield-alt"></i></div>
+                <div class="info">
+                    <span class="cat">Protección</span>
+                    <h3>Mica de Vidrio 9D (Todos los modelos)</h3>
+                    <div class="precio">S/ 15.00</div>
+                </div>
+                <a href="https://wa.me/51910457625?text=Mica%20de%20Vidrio" class="btn-wa"><i class="fab fa-whatsapp"></i> Pedir</a>
+            </div>
+
+            <div class="card" data-tags="carcasa case protector silicona iphone">
+                <div class="img-placeholder"><i class="fas fa-mobile"></i></div>
+                <div class="info">
+                    <span class="cat">Protección</span>
+                    <h3>Carcasa Silicona Premium</h3>
+                    <div class="precio">S/ 25.00</div>
+                </div>
+                <a href="https://wa.me/51910457625?text=Info%20Carcasas" class="btn-wa"><i class="fab fa-whatsapp"></i> Ver Diseños</a>
+            </div>
+
+            <div class="card" data-tags="memoria micro sd 64gb kingston">
+                <div class="img-placeholder"><i class="fas fa-sd-card"></i></div>
+                <div class="info">
+                    <span class="cat">Accesorios</span>
+                    <h3>Micro SD 64GB Kingston</h3>
+                    <div class="precio">S/ 35.00</div>
+                </div>
+                <a href="https://wa.me/51910457625?text=Micro%20SD%2064GB" class="btn-wa"><i class="fab fa-whatsapp"></i> Comprar</a>
+            </div>
+
+            <div class="card" data-tags="reloj inteligente smartwatch t800 ultra">
+                <div class="img-placeholder"><i class="fas fa-clock"></i></div>
+                <div class="info">
+                    <span class="cat">Gadgets</span>
+                    <h3>Smartwatch T800 Ultra</h3>
+                    <div class="precio">S/ 85.00</div>
+                </div>
+                <a href="https://wa.me/51910457625?text=Info%20Smartwatch" class="btn-wa"><i class="fab fa-whatsapp"></i> Pedir</a>
+            </div>
+
         </div>
     </div>
 
-    <a href="https://wa.me/51910457625" class="float-wa" target="_blank">
-        <i class="fab fa-whatsapp"></i>
-    </a>
+    <a href="https://wa.me/51910457625" class="float-wa" target="_blank"><i class="fab fa-whatsapp"></i></a>
 
     <footer>
-        <p><strong>INVERSIONES COLKA</strong></p>
-        <p>Expertos en tecnología móvil | Colcabamba - Tayacaja - Perú</p>
-        <p>© 2026 Todos los derechos reservados.</p>
+        <p><strong>INVERSIONES COLKA 2026</strong></p>
+        <p>Envíos a todo Colcabamba y Tayacaja</p>
     </footer>
 
     <script>
         function filtrar() {
-            let valorBusqueda = document.getElementById('buscador').value.toLowerCase();
-            let cards = document.querySelectorAll('.card');
-
-            cards.forEach(card => {
-                let nombre = card.getAttribute('data-nombre');
-                if (nombre.includes(valorBusqueda)) {
-                    card.classList.remove('hidden');
-                } else {
-                    card.classList.add('hidden');
-                }
-            });
-        }
-
-        function filtrarCategoria(categoria, btn) {
-            let cards = document.querySelectorAll('.card');
-            let btns = document.querySelectorAll('.cat-btn');
-
-            btns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            cards.forEach(card => {
-                let cat = card.getAttribute('data-cat');
-                if (categoria === 'Todos' || cat === categoria) {
-                    card.classList.remove('hidden');
-                } else {
-                    card.classList.add('hidden');
-                }
+            let busqueda = document.getElementById('buscador').value.toLowerCase();
+            let items = document.querySelectorAll('.card');
+            items.forEach(item => {
+                let tags = item.getAttribute('data-tags');
+                item.classList.toggle('hidden', !tags.includes(busqueda));
             });
         }
     </script>
