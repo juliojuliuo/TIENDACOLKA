@@ -1,31 +1,99 @@
-<div class="enlaces">
-    <a href="https://wa.me/51910457625?text=Hola%20Franklin,%20vi%20tu%20página%20y%20quiero%20información" class="btn-link" target="_blank">
-        <i class="fab fa-whatsapp"></i> Escríbeme al WhatsApp
-    </a>
-    
-    <a href="https://facebook.com/tu_perfil" class="btn-link" target="_blank">
-        <i class="fab fa-facebook"></i> Mi Perfil de Facebook
-    </a>
-    
-    <a href="https://maps.app.goo.gl/Z8v3tSjS..." class="btn-link" target="_blank">
-        <i class="fas fa-location-dot"></i> Ver mi Ubicación en Colcabamba
-    </a>
-</div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inversiones Colka | Tienda de Celulares</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --azul: #1b4b8a; --gris: #6d6e71; --fondo: #f4f4f4; }
+        body { font-family: 'Arial', sans-serif; margin: 0; background: var(--fondo); color: #333; }
+        
+        /* CABECERA */
+        header { background: var(--azul); color: white; padding: 40px 20px; text-align: center; }
+        .logo-nombre { font-size: 28px; font-weight: bold; letter-spacing: 2px; margin: 0; }
+        .sub-nombre { font-size: 14px; opacity: 0.9; text-transform: uppercase; }
 
-<section class="seccion">
-    <h2>Catálogo de Servicios</h2>
-    <div class="grid-servicios">
-        <div class="card-servicio">
-            <i class="fas fa-seedling" style="color:var(--gold)"></i>
-            <h3>Venta de Plantas</h3>
-            <p>Plantas de vivero con certificación técnica. Calidad garantizada.</p>
-            <span class="precio">S/ Consultar</span>
+        /* CONTACTO RÁPIDO */
+        .botones-contacto { display: flex; justify-content: center; gap: 15px; padding: 20px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-c { text-decoration: none; color: white; background: #25d366; padding: 10px 20px; border-radius: 50px; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .btn-f { background: #1877f2; }
+
+        /* CATEGORÍAS */
+        .contenedor { max-width: 1000px; margin: 20px auto; padding: 20px; }
+        h2 { border-left: 5px solid var(--azul); padding-left: 10px; color: var(--azul); margin-bottom: 25px; }
+
+        .grid-productos { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; }
+        .producto { background: white; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #ddd; transition: 0.3s; }
+        .producto:hover { transform: translateY(-5px); border-color: var(--azul); }
+        .producto i { font-size: 40px; color: var(--gris); margin-bottom: 10px; }
+        .producto h3 { font-size: 14px; margin: 10px 0; }
+        .btn-pedir { display: block; background: var(--azul); color: white; text-decoration: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; margin-top: 10px; }
+
+        /* FOOTER */
+        footer { text-align: center; padding: 30px; color: var(--gris); font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <p class="sub-nombre">Bienvenidos a</p>
+        <h1 class="logo-nombre">INVERSIONES COLKA</h1>
+        <p>Tecnología y Accesorios a tu alcance</p>
+    </header>
+
+    <div class="botones-contacto">
+        <a href="https://wa.me/51910457625?text=Hola%20Colka,%20quiero%20consultar%20por%20un%20producto" class="btn-c" target="_blank">
+            <i class="fab fa-whatsapp"></i> WhatsApp
+        </a>
+        <a href="#" class="btn-c btn-f" target="_blank">
+            <i class="fab fa-facebook"></i> Facebook
+        </a>
+    </div>
+
+    <div class="contenedor">
+        <h2>📱 Celulares y Equipos</h2>
+        <div class="grid-productos">
+            <div class="producto">
+                <i class="fas fa-mobile-alt"></i>
+                <h3>Celulares</h3>
+                <a href="https://wa.me/51910457625?text=Busco%20un%20celular" class="btn-pedir">CONSULTAR</a>
+            </div>
+            <div class="producto">
+                <i class="fas fa-headset"></i>
+                <h3>Audífonos</h3>
+                <a href="https://wa.me/51910457625?text=Busco%20audífonos" class="btn-pedir">VER MODELOS</a>
+            </div>
+            <div class="producto">
+                <i class="fas fa-volume-up"></i>
+                <h3>Parlantes</h3>
+                <a href="https://wa.me/51910457625?text=Busco%20parlantes" class="btn-pedir">CONSULTAR</a>
+            </div>
         </div>
-        <div class="card-servicio">
-            <i class="fas fa-hard-hat" style="color:var(--gold)"></i>
-            <h3>Maestro en Estructuras</h3>
-            <p>Servicio especializado en construcción y control de calidad de obra.</p>
-            <span class="precio">Cotización Libre</span>
+
+        <h2 style="margin-top:40px;">🛡️ Protectores y Carga</h2>
+        <div class="grid-productos">
+            <div class="producto">
+                <i class="fas fa-bolt"></i>
+                <h3>Cargadores</h3>
+                <a href="https://wa.me/51910457625?text=Busco%20cargador" class="btn-pedir">PEDIR</a>
+            </div>
+            <div class="producto">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Fibra de Vidrio</h3>
+                <a href="https://wa.me/51910457625?text=Busco%20fibra%20de%20vidrio" class="btn-pedir">PEDIR</a>
+            </div>
+            <div class="producto">
+                <i class="fas fa-mobile"></i>
+                <h3>Carcasas</h3>
+                <a href="https://wa.me/51910457625?text=Busco%20carcasa" class="btn-pedir">VER MÁS</a>
+            </div>
         </div>
     </div>
-</section>
+
+    <footer>
+        📍 Colcabamba - Tayacaja | INVERSIONES COLKA &copy; 2026
+    </footer>
+
+</body>
+</html>
