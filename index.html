@@ -3,74 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INVERSIONES COLKA | Catálogo Pro</title>
+    <title>INVERSIONES COLKA | Ofertas Tech</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primario: #1b4b8a; --verde: #25d366; --fondo: #f4f7f6; --oferta: #ff3e3e; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--fondo); color: #333; }
+        :root { 
+            --primario: #1b4b8a; 
+            --verde: #25d366; 
+            --fondo: #f1f5f9; 
+            --oferta: #ff3e3e;
+            --amarillo: #ffcc00;
+        }
         
-        header { background: white; padding: 25px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .logo { font-size: 2.2rem; font-weight: 900; color: var(--primario); margin: 0; text-transform: uppercase; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--fondo); color: #333; overflow-x: hidden; }
+        
+        /* BANNER DE BIENVENIDA / OFERTA */
+        .promo-banner {
+            background: linear-gradient(135deg, var(--primario) 0%, #0a2d5a 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .promo-banner h2 { 
+            font-size: 2.5rem; 
+            margin: 0; 
+            text-transform: uppercase; 
+            font-weight: 900;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .promo-banner p { font-size: 1.2rem; margin: 10px 0 25px; opacity: 0.9; }
+        
+        .btn-oferta {
+            background: var(--amarillo);
+            color: #000;
+            padding: 15px 35px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 5px 15px rgba(255, 204, 0, 0.4);
+            transition: 0.3s;
+        }
+        .btn-oferta:hover { transform: scale(1.1); background: white; }
 
-        /* BUSCADOR */
-        .search-area { max-width: 600px; margin: 20px auto 10px; padding: 0 20px; }
-        #buscador { width: 100%; padding: 15px 25px; border-radius: 50px; border: 2px solid #ddd; box-shadow: 0 5px 15px rgba(0,0,0,0.05); outline: none; font-size: 16px; transition: 0.3s; }
-        #buscador:focus { border-color: var(--primario); }
+        /* HEADER LOGO */
+        header { background: white; padding: 15px; text-align: center; }
+        .logo { font-size: 1.8rem; font-weight: 900; color: var(--primario); margin: 0; }
 
-        /* BARRA DE CATEGORÍAS */
+        /* BUSCADOR Y CATEGORÍAS */
+        .sticky-nav { position: sticky; top: 0; background: var(--fondo); z-index: 1000; padding-top: 10px; }
+        .search-area { max-width: 600px; margin: 0 auto 10px; padding: 0 20px; }
+        #buscador { width: 100%; padding: 15px 25px; border-radius: 50px; border: 2px solid #ddd; outline: none; font-size: 16px; box-shadow: 0 5px 10px rgba(0,0,0,0.05); }
+
         .categorias-bar {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 20px auto;
-            overflow-x: auto;
-            padding: 10px;
-            max-width: 1000px;
-            scrollbar-width: none;
+            display: flex; justify-content: center; gap: 10px; margin: 10px auto;
+            overflow-x: auto; padding: 10px; max-width: 1000px; scrollbar-width: none;
         }
         .categorias-bar::-webkit-scrollbar { display: none; }
         
         .cat-btn {
-            background: white;
-            border: 1px solid #ddd;
-            padding: 10px 22px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            white-space: nowrap;
-            transition: 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            background: white; border: 1px solid #ddd; padding: 10px 20px; border-radius: 50px;
+            cursor: pointer; font-weight: bold; white-space: nowrap; transition: 0.3s;
         }
-        .cat-btn.active, .cat-btn:hover {
-            background: var(--primario);
-            color: white;
-            border-color: var(--primario);
-        }
+        .cat-btn.active, .cat-btn:hover { background: var(--primario); color: white; border-color: var(--primario); }
 
+        /* GRILLA */
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
 
         /* TARJETAS */
-        .card { background: white; border-radius: 15px; overflow: hidden; border: 1px solid #eee; transition: 0.3s; display: flex; flex-direction: column; position: relative; }
-        .card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .card { background: white; border-radius: 20px; overflow: hidden; transition: 0.3s; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
         
-        .badge { position: absolute; top: 10px; right: 10px; background: var(--oferta); color: white; padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; z-index: 5; }
+        .badge { position: absolute; top: 15px; right: 15px; background: var(--oferta); color: white; padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; z-index: 5; }
 
-        .img-placeholder { height: 160px; background: #f9f9f9; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #f0f0f0; }
-        .img-placeholder i { font-size: 50px; color: #ddd; }
+        .img-box { height: 180px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; font-size: 60px; color: #cbd5e1; }
 
-        .info { padding: 15px; flex-grow: 1; }
-        .info h3 { margin: 0; font-size: 17px; color: #111; height: 45px; overflow: hidden; text-align: left; }
-        .info .cat-label { font-size: 10px; color: var(--primario); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .precio { font-size: 22px; font-weight: 800; color: var(--primario); margin: 10px 0; text-align: left; }
+        .info { padding: 20px; flex-grow: 1; }
+        .info h3 { margin: 0; font-size: 18px; color: #1e293b; text-align: left; }
+        .precio { font-size: 24px; font-weight: 800; color: var(--primario); margin: 10px 0; text-align: left; }
+        .desc { font-size: 13px; color: #64748b; text-align: justify; line-height: 1.5; margin-bottom: 15px; }
 
-        .btn-wa { background: var(--verde); color: white; text-decoration: none; padding: 12px; text-align: center; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
-        .btn-wa:hover { filter: brightness(0.9); }
+        .btn-wa { background: var(--verde); color: white; text-decoration: none; padding: 15px; text-align: center; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
-        .float-wa { position: fixed; width: 60px; height: 60px; bottom: 30px; right: 30px; background: var(--verde); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-decoration: none; z-index: 1000; }
+        .float-wa { position: fixed; width: 65px; height: 65px; bottom: 30px; right: 30px; background: var(--verde); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); text-decoration: none; z-index: 1000; transition: 0.3s; }
+        .float-wa:hover { transform: scale(1.1); }
 
-        footer { text-align: center; padding: 40px; background: #fff; border-top: 1px solid #eee; margin-top: 50px; color: #888; }
+        footer { text-align: center; padding: 40px; background: #fff; border-top: 1px solid #eee; margin-top: 50px; }
         .hidden { display: none !important; }
+
+        @media (max-width: 600px) {
+            .promo-banner h2 { font-size: 1.8rem; }
+            .logo { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body>
@@ -79,134 +106,20 @@
         <h1 class="logo">INVERSIONES COLKA</h1>
     </header>
 
-    <div class="search-area">
-        <input type="text" id="buscador" placeholder="🔎 Busca por nombre o marca..." onkeyup="filtrar()">
-    </div>
+    <section class="promo-banner">
+        <h2>OFERTAS DE FEBRERO</h2>
+        <p>¡Llegaron los nuevos ingresos! Accesorios con hasta 30% de descuento.</p>
+        <a href="https://wa.me/51910457625?text=Hola,%20vengo%20por%20las%20ofertas%20del%20banner" class="btn-oferta">VER PROMOCIONES</a>
+    </section>
 
-    <div class="categorias-bar">
-        <button class="cat-btn active" onclick="filtrarCategoria('Todos', this)">Todos</button>
-        <button class="cat-btn" onclick="filtrarCategoria('Equipos', this)">Celulares</button>
-        <button class="cat-btn" onclick="filtrarCategoria('Audio', this)">Audio</button>
-        <button class="cat-btn" onclick="filtrarCategoria('Carga', this)">Cargadores</button>
-        <button class="cat-btn" onclick="filtrarCategoria('Proteccion', this)">Protección</button>
-    </div>
-
-    <div class="container">
-        <div class="grid" id="lista">
-            
-            <div class="card" data-nombre="samsung galaxy a54 smartphone celular" data-cat="Equipos">
-                <span class="badge">NUEVO</span>
-                <div class="img-placeholder"><i class="fas fa-mobile-alt"></i></div>
-                <div class="info">
-                    <span class="cat-label">Celulares</span>
-                    <h3>Samsung Galaxy A54 5G</h3>
-                    <div class="precio">S/ 1,250.00</div>
-                </div>
-                <a href="https://wa.me/51910457625?text=Info%20Samsung%20A54" class="btn-wa"><i class="fab fa-whatsapp"></i> Consultar</a>
-            </div>
-
-            <div class="card" data-nombre="iphone 13 apple smartphone celular" data-cat="Equipos">
-                <span class="badge">OFERTA</span>
-                <div class="img-placeholder"><i class="fas fa-mobile-alt"></i></div>
-                <div class="info">
-                    <span class="cat-label">Celulares</span>
-                    <h3>iPhone 13 128GB</h3>
-                    <div class="precio">S/ 2,800.00</div>
-                </div>
-                <a href="https://wa.me/51910457625?text=Info%20iPhone%2013" class="btn-wa"><i class="fab fa-whatsapp"></i> Consultar</a>
-            </div>
-
-            <div class="card" data-nombre="audifonos lenovo xt80 bluetooth inalambricos" data-cat="Audio">
-                <div class="img-placeholder"><i class="fas fa-headset"></i></div>
-                <div class="info">
-                    <span class="cat-label">Audio</span>
-                    <h3>Audífonos Lenovo XT80 Pro</h3>
-                    <div class="precio">S/ 65.00</div>
-                </div>
-                <a href="https://wa.me/51910457625?text=Quiero%20Audifonos%20Lenovo" class="btn-wa"><i class="fab fa-whatsapp"></i> Comprar</a>
-            </div>
-
-            <div class="card" data-nombre="parlante bluetooth jbl sonido potente" data-cat="Audio">
-                <div class="img-placeholder"><i class="fas fa-volume-up"></i></div>
-                <div class="info">
-                    <span class="cat-label">Audio</span>
-                    <h3>Parlante JBL Flip 6 (Replica)</h3>
-                    <div class="precio">S/ 95.00</div>
-                </div>
-                <a href="https://wa.me/51910457625?text=Info%20Parlante%20JBL" class="btn-wa"><i class="fab fa-whatsapp"></i> Comprar</a>
-            </div>
-
-            <div class="card" data-nombre="cargador xiaomi 33w original tipo c carga rapida" data-cat="Carga">
-                <div class="img-placeholder"><i class="fas fa-bolt"></i></div>
-                <div class="info">
-                    <span class="cat-label">Carga</span>
-                    <h3>Cargador Xiaomi 33W Original</h3>
-                    <div class="precio">S/ 45.00</div>
-                </div>
-                <a href="https://wa.me/51910457625?text=Quiero%20Cargador%20Xiaomi%2033W" class="btn-wa"><i class="fab fa-whatsapp"></i> Comprar</a>
-            </div>
-
-            <div class="card" data-nombre="fibra de vidrio mica protector pantalla" data-cat="Proteccion">
-                <span class="badge">TOP</span>
-                <div class="img-placeholder"><i class="fas fa-shield-alt"></i></div>
-                <div class="info">
-                    <span class="cat-label">Protección</span>
-                    <h3>Mica de Vidrio 9D Premium</h3>
-                    <div class="precio">S/ 15.00</div>
-                </div>
-                <a href="https://wa.me/51910457625?text=Mica%20de%20Vidrio" class="btn-wa"><i class="fab fa-whatsapp"></i> Pedir</a>
-            </div>
-
-            <div class="card" data-nombre="carcasa case protector funda silicona" data-cat="Proteccion">
-                <div class="img-placeholder"><i class="fas fa-mobile"></i></div>
-                <div class="info">
-                    <span class="cat-label">Protección</span>
-                    <h3>Carcasa Silicona Premium</h3>
-                    <div class="precio">S/ 25.00</div>
-                </div>
-                <a href="https://wa.me/51910457625?text=Info%20Carcasas" class="btn-wa"><i class="fab fa-whatsapp"></i> Ver Diseños</a>
-            </div>
-
+    <div class="sticky-nav">
+        <div class="search-area">
+            <input type="text" id="buscador" placeholder="🔎 ¿Qué accesorio buscas hoy?" onkeyup="filtrar()">
         </div>
-    </div>
 
-    <a href="https://wa.me/51910457625" class="float-wa" target="_blank"><i class="fab fa-whatsapp"></i></a>
-
-    <footer>
-        <p><strong>INVERSIONES COLKA 2026</strong></p>
-        <p>Colcabamba - Tayacaja - Perú</p>
-    </footer>
-
-    <script>
-        // Función para el buscador por texto
-        function filtrar() {
-            let busqueda = document.getElementById('buscador').value.toLowerCase();
-            let items = document.querySelectorAll('.card');
-            items.forEach(item => {
-                let nombre = item.getAttribute('data-nombre');
-                item.classList.toggle('hidden', !nombre.includes(busqueda));
-            });
-        }
-
-        // Función para filtrar por botones de categoría
-        function filtrarCategoria(cat, btn) {
-            let items = document.querySelectorAll('.card');
-            let btns = document.querySelectorAll('.cat-btn');
-
-            // Cambiar color del botón activo
-            btns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            // Filtrar productos
-            items.forEach(item => {
-                let itemCat = item.getAttribute('data-cat');
-                if (cat === 'Todos' || itemCat === cat) {
-                    item.classList.remove('hidden');
-                } else {
-                    item.classList.add('hidden');
-                }
-            });
-        }
-    </script>
-</body>
-</html>
+        <div class="categorias-bar">
+            <button class="cat-btn active" onclick="filtrarCategoria('Todos', this)">Todos</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Equipos', this)">Celulares</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Audio', this)">Audio</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Carga', this)">Cargadores</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Proteccion', this)">
