@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inversiones COLKA | Lujo y Tecnología</title>
+    <title>Inversiones COLKA | Julio Valladolid</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -14,33 +14,19 @@
                             DEFAULT: '#D4AF37',
                             light: '#F2E6A6',
                             dark: '#A6841C',
-                            hover: '#EAC14D',
                         },
                         dark: {
-                            DEFAULT: '#1A1A1A',
-                            card: '#262626',
-                            nav: 'rgba(26, 26, 26, 0.95)',
+                            DEFAULT: '#0A0A0A',
+                            card: 'rgba(20, 20, 20, 0.8)',
+                            nav: 'rgba(10, 10, 10, 0.95)',
                         }
                     },
-                    fontFamily: { sans: ['Inter', 'sans-serif'], serif: ['Merriweather', 'serif'] },
-                    animation: {
-                        'fade-in': 'fadeIn 0.8s ease-out',
-                        'slide-up': 'slideUp 0.8s ease-out',
-                        'pulse-gold': 'pulseGold 2s infinite',
-                    },
-                    keyframes: {
-                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        slideUp: { '0%': { transform: 'translateY(30px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
-                        pulseGold: { '0%, 100%': { boxShadow: '0 0 0 0 rgba(212, 175, 55, 0.4)' }, '50%': { boxShadow: '0 0 0 15px rgba(212, 175, 55, 0)' } }
-                    },
-                    backgroundImage: {
-                        'hero-pattern': "url('https://i.ibb.co/gFLQx3d/image-12.png')", // Fondo de gavilán dorado
-                    }
+                    fontFamily: { sans: ['Inter', 'sans-serif'], serif: ['Merriweather', 'serif'] }
                 }
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Merriweather:wght@700&display=swap" rel="stylesheet">
     <script type="importmap">
     {
       "imports": {
@@ -55,28 +41,30 @@
     </script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
+        /* FONDO PERSONALIZADO CON TU GAVILÁN */
         body {
-            background-color: #1A1A1A;
+            background-color: #0A0A0A;
             color: #F2F2F2;
-            font-family: 'Inter', sans-serif;
-            background-image: url('https://i.ibb.co/gFLQx3d/image-12.png');
-            background-size: cover;
+            background-image: linear-gradient(rgba(10, 10, 10, 0.85), rgba(10, 10, 10, 0.85)), 
+                              url('https://i.postimg.cc/pTqbQj9S/Gemini-Generated-Image-j46w7wj46w7wj46w.png');
+            background-size: 80%; /* Tamaño del gavilán */
             background-position: center;
+            background-repeat: no-repeat;
             background-attachment: fixed;
-            background-blend-mode: soft-light;
+            font-family: 'Inter', sans-serif;
         }
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(15px); 
+            border: 1px solid rgba(212, 175, 55, 0.2); 
+            transition: all 0.4s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(212, 175, 55, 0.6);
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.15);
+        }
+        .gold-glow { text-shadow: 0 0 15px rgba(212, 175, 55, 0.5); }
         .hide-scroll::-webkit-scrollbar { display: none; }
-        .glass-nav { background: rgba(26, 26, 26, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
-        .gold-gradient-text {
-            background: linear-gradient(to right, #D4AF37, #F2E6A6, #D4AF37);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.15);
-            border-color: rgba(212, 175, 55, 0.5);
-        }
     </style>
 </head>
 <body>
@@ -88,9 +76,8 @@
         import { initializeApp } from 'firebase/app';
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
         import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-        import { ShoppingCart, Search, Plus, Trash2, Edit2, X, LayoutDashboard, Store, Lock, Smartphone, Laptop, Headphones, Watch, Zap, MapPin, Phone, Clock, Star, ShieldCheck, Truck, Facebook, Instagram, User, ChevronRight } from 'lucide-react';
+        import { ShoppingCart, Search, Plus, Trash2, Edit2, X, LayoutDashboard, Lock, Smartphone, Laptop, Headphones, Watch, Zap, MapPin, Phone, Clock, Star, ShieldCheck, Truck, Facebook, Instagram, User, ChevronRight } from 'lucide-react';
 
-        // --- TUS CREDENCIALES REALES ---
         const firebaseConfig = {
             apiKey: "AIzaSyBcOLkenlK-ATzMgZL0i2kukr2l1gPJZfY",
             authDomain: "inversiones-colka.firebaseapp.com",
@@ -106,35 +93,8 @@
         const appId = 'inversiones-colka-v1';
         const productsCol = collection(db, 'artifacts', appId, 'public', 'data', 'products');
         const categoriesCol = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
-
-        // TU NÚMERO DE WHATSAPP
         const MY_PHONE = "51983200830";
-
-        // URL DEL LOGO
         const LOGO_URL = "https://i.ibb.co/q1xSgXq/image-11.png";
-
-        // BANNER DE IMÁGENES (Estilo Lujo)
-        const BANNER_SLIDES = [
-            { id: 1, title: "Elegancia y Poder", subtitle: "Descubre la nueva colección de iPhone.", img: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?q=80&w=1600&auto=format&fit=crop" },
-            { id: 2, title: "Sonido Dorado", subtitle: "Audífonos premium para oídos exigentes.", img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1600&auto=format&fit=crop" },
-            { id: 3, title: "Tiempo de Lujo", subtitle: "Smartwatches que definen tu estilo.", img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1600&auto=format&fit=crop" }
-        ];
-
-        // TESTIMONIOS (Estilo Lujo)
-        const REVIEWS = [
-            { id: 1, name: "Carlos M.", text: "La atención de Julio es de primera clase. Productos exclusivos y garantía total.", stars: 5, role: "Cliente VIP" },
-            { id: 2, name: "Ana P.", text: "Encontré la laptop perfecta para mi negocio. Asesoramiento experto y personalizado.", stars: 5, role: "Empresaria" },
-            { id: 3, name: "Jorge L.", text: "El servicio técnico es impecable. Profesionales que cuidan cada detalle.", stars: 5, role: "Arquitecto" }
-        ];
-
-        const getCategoryIcon = (name) => {
-            const n = name.toLowerCase();
-            if (n.includes('celular') || n.includes('iphone')) return <Smartphone size={18} className="text-gold" />;
-            if (n.includes('laptop') || n.includes('pc')) return <Laptop size={18} className="text-gold" />;
-            if (n.includes('audio') || n.includes('audifono')) return <Headphones size={18} className="text-gold" />;
-            if (n.includes('reloj') || n.includes('watch')) return <Watch size={18} className="text-gold" />;
-            return <Zap size={18} className="text-gold" />;
-        };
 
         function App() {
             const [user, setUser] = useState(null);
@@ -145,13 +105,8 @@
             const [search, setSearch] = useState('');
             const [activeCategory, setActiveCategory] = useState('Todos');
             const [isCartOpen, setIsCartOpen] = useState(false);
-            const [currentSlide, setCurrentSlide] = useState(0);
-            
-            // ADMIN LOGIN
             const [showLogin, setShowLogin] = useState(false);
             const [passwordInput, setPasswordInput] = useState('');
-            
-            // MODAL PRODUCTOS
             const [showProductModal, setShowProductModal] = useState(false);
             const [editingProduct, setEditingProduct] = useState(null);
             const [newProduct, setNewProduct] = useState({ name: '', price: '', category: '', description: '', image: '', stock: 'Disponible' });
@@ -160,14 +115,8 @@
             useEffect(() => {
                 signInAnonymously(auth);
                 onAuthStateChanged(auth, setUser);
-                const unsubP = onSnapshot(productsCol, s => setProducts(s.docs.map(d => ({id:d.id, ...d.data()}))));
-                const unsubC = onSnapshot(categoriesCol, s => setCategories(s.docs.map(d => ({id:d.id, ...d.data()}))));
-                return () => { unsubP(); unsubC(); };
-            }, []);
-
-            useEffect(() => {
-                const timer = setInterval(() => { setCurrentSlide((prev) => (prev + 1) % BANNER_SLIDES.length); }, 6000);
-                return () => clearInterval(timer);
+                onSnapshot(productsCol, s => setProducts(s.docs.map(d => ({id:d.id, ...d.data()}))));
+                onSnapshot(categoriesCol, s => setCategories(s.docs.map(d => ({id:d.id, ...d.data()}))));
             }, []);
 
             const filteredProducts = useMemo(() => {
@@ -186,298 +135,189 @@
                 setIsCartOpen(true);
             };
 
-            const removeFromCart = (id) => setCart(prev => prev.filter(i => i.id !== id));
-            const cartTotal = cart.reduce((acc, i) => acc + (parseFloat(i.price||0) * i.qty), 0);
-            
             const finalizarPedido = () => {
                 const txt = cart.map(i => `- ${i.qty}x ${i.name} (S/ ${i.price})`).join('\n');
-                const msg = `Hola Julio (Inversiones COLKA), deseo realizar el siguiente pedido exclusivo:\n\n${txt}\n\n*Total a Pagar: S/ ${cartTotal.toFixed(2)}*`;
+                const msg = `Hola Julio, quiero realizar este pedido:\n\n${txt}\n\n*Total: S/ ${cart.reduce((a,b)=>a+(b.price*b.qty),0).toFixed(2)}*`;
                 window.open(`https://wa.me/${MY_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
             };
 
-            const saveProduct = async (e) => { e.preventDefault(); if(editingProduct) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', editingProduct.id), newProduct); else await addDoc(productsCol, newProduct); setShowProductModal(false); setEditingProduct(null); setNewProduct({ name: '', price: '', category: '', description: '', image: '', stock: 'Disponible' }); };
-            
-            const handleLogin = (e) => { 
-                e.preventDefault(); 
-                if(passwordInput === 'hola123') {
-                    setIsAdmin(true); 
-                    setShowLogin(false); 
-                    setPasswordInput(''); 
-                } else { 
-                    alert("Contraseña incorrecta."); 
-                } 
-            };
-            
-            const addCategory = async () => { if(newCatName) { await addDoc(categoriesCol, { name: newCatName }); setNewCatName(''); }};
-            const deleteItem = async (col, id) => { if(confirm("¿Estás seguro?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', col, id)); };
-
             return (
-                <div className="min-h-screen font-sans">
+                <div className="min-h-screen">
                     {/* NAVBAR */}
-                    <nav className="fixed w-full z-50 top-0 glass-nav h-20 flex items-center shadow-lg shadow-black/20">
-                        <div className="max-w-7xl mx-auto px-4 w-full flex justify-between items-center">
-                            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo(0,0)}>
-                                <img src={LOGO_URL} alt="COLKA Logo" className="h-12 w-auto group-hover:scale-105 transition-transform duration-300 filter drop-shadow-[0_2px_4px_rgba(212,175,55,0.3)]" />
-                            </div>
-                            <div className="flex items-center gap-4">
-                                {isAdmin ? (
-                                    <button onClick={() => setIsAdmin(false)} className="px-5 py-2.5 bg-red-600/10 text-red-500 rounded-full text-xs font-bold border border-red-600/30 hover:bg-red-600/20 transition-all tracking-wider">SALIR ADMIN</button>
-                                ) : (
-                                    <button onClick={() => setShowLogin(true)} className="px-5 py-2.5 text-gold-light hover:text-gold text-xs font-bold flex items-center gap-2 transition-colors hover:bg-gold/10 rounded-full border border-gold/30 tracking-wider"><Lock size={14}/> ADMIN</button>
-                                )}
-                                {!isAdmin && (
-                                    <button onClick={() => setIsCartOpen(true)} className="relative bg-gold/20 text-gold p-3 rounded-full hover:bg-gold/30 transition-transform shadow-lg shadow-gold/10 active:scale-95 border border-gold/30 group">
-                                        <ShoppingCart size={20} className="group-hover:animate-pulse-gold" />
-                                        {cart.length > 0 && <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold border-2 border-dark-nav">{cart.length}</span>}
-                                    </button>
-                                )}
+                    <nav className="fixed w-full z-50 top-0 bg-dark-nav border-b border-gold/20 h-20 flex items-center px-4 shadow-2xl">
+                        <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
+                            <img src={LOGO_URL} alt="COLKA" className="h-12 cursor-pointer" onClick={() => window.scrollTo(0,0)} />
+                            <div className="flex items-center gap-6">
+                                <button onClick={() => isAdmin ? setIsAdmin(false) : setShowLogin(true)} className="text-gold-light text-xs font-bold flex items-center gap-2 hover:text-gold transition-colors">
+                                    <Lock size={14}/> {isAdmin ? 'SALIR' : 'ADMIN'}
+                                </button>
+                                <button onClick={() => setIsCartOpen(true)} className="relative bg-gold/10 text-gold p-3 rounded-full border border-gold/30">
+                                    <ShoppingCart size={22} />
+                                    {cart.length > 0 && <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">{cart.length}</span>}
+                                </button>
                             </div>
                         </div>
                     </nav>
 
-                    {/* MAIN CONTENT */}
-                    <div className="pt-20">
+                    <div className="pt-32 px-4 max-w-7xl mx-auto">
                         {isAdmin ? (
-                            /* --- VISTA ADMIN PROTEGIDA --- */
-                            <div className="max-w-7xl mx-auto px-4 pt-12 animate-fade-in pb-20">
-                                <div className="bg-dark-card text-gold-light rounded-[2rem] p-10 mb-10 flex flex-col md:flex-row justify-between items-center shadow-2xl border border-gold/20">
-                                    <div className="mb-6 md:mb-0">
-                                        <h2 className="text-4xl font-bold mb-2 flex items-center gap-3 font-serif text-gold"><User size={32}/> Panel de Control</h2>
-                                        <p className="text-gold-light/70 text-sm tracking-wider">Gestión exclusiva para Julio Valladolid.</p>
+                            /* --- VISTA ADMIN --- */
+                            <div className="animate-fade-in pb-20">
+                                <div className="glass-card rounded-[2rem] p-8 mb-10 flex flex-col md:flex-row justify-between items-center">
+                                    <div>
+                                        <h2 className="text-3xl font-black text-gold font-serif">Bienvenido, Julio</h2>
+                                        <p className="text-gold-light/60 text-sm">Gestiona tu inventario con el respaldo de Colka.</p>
                                     </div>
-                                    <button onClick={() => { setEditingProduct(null); setNewProduct({name:'', price:'', category:'', description:'', image:'', stock:'Disponible'}); setShowProductModal(true); }} className="bg-gold text-dark-nav px-8 py-4 rounded-xl font-bold flex gap-2 hover:bg-gold-hover transition-all shadow-lg shadow-gold/20"><Plus/> Nuevo Producto</button>
+                                    <button onClick={() => { setEditingProduct(null); setNewProduct({name:'', price:'', category:'', description:'', image:'', stock:'Disponible'}); setShowProductModal(true); }} className="mt-4 md:mt-0 bg-gold text-black px-8 py-3 rounded-xl font-bold hover:bg-gold-light transition-all">
+                                        + NUEVO PRODUCTO
+                                    </button>
                                 </div>
-                                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                                    <div className="bg-dark-card p-8 rounded-[2rem] shadow-lg border border-gold/10 h-fit sticky top-24">
-                                        <h3 className="font-bold text-gold uppercase text-xs mb-6 tracking-[0.2em]">Categorías</h3>
-                                        <div className="flex gap-3 mb-6"><input value={newCatName} onChange={(e)=>setNewCatName(e.target.value)} placeholder="Nueva..." className="w-full bg-dark/50 border border-gold/20 rounded-xl px-4 py-3 text-sm outline-none focus:border-gold text-gold-light placeholder:text-gold-light/30"/><button onClick={addCategory} className="bg-gold text-dark-nav rounded-xl p-3 hover:bg-gold-hover transition-colors"><Plus size={18}/></button></div>
-                                        <div className="space-y-2">{categories.map(c => (<div key={c.id} className="flex justify-between items-center p-3 hover:bg-gold/5 rounded-xl group transition-colors border border-transparent hover:border-gold/10"><span className="text-sm font-medium text-gold-light">{c.name}</span><button onClick={()=>deleteItem('categories', c.id)} className="text-gold-light/50 hover:text-red-500 transition-colors"><Trash2 size={16}/></button></div>))}</div>
-                                    </div>
-                                    <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {products.length === 0 && <div className="col-span-2 text-center py-24 bg-dark-card rounded-[2rem] border-2 border-dashed border-gold/20"><p className="text-gold-light/50 font-bold text-xl">Inventario vacío. ¡Comienza a agregar lujo!</p></div>}
-                                        {products.map(p => (<div key={p.id} className="bg-dark-card p-6 rounded-[2.5rem] border border-gold/10 flex gap-5 shadow-md hover:shadow-xl transition-all group card-hover"><div className="w-24 h-24 bg-dark/50 rounded-2xl flex items-center justify-center overflow-hidden border border-gold/20 p-2">{p.image ? <img src={p.image} className="w-full h-full object-cover rounded-xl"/> : <Smartphone className="text-gold/30" size={32}/>}</div><div className="flex-1 min-w-0 py-1"><h4 className="font-bold text-gold text-lg line-clamp-1 font-serif">{p.name}</h4><span className="text-[10px] font-bold text-gold-light bg-gold/10 px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-2">{p.category}</span><p className="font-black text-2xl text-white">S/ {p.price}</p></div><div className="flex flex-col gap-3 justify-center opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={()=>{setEditingProduct(p); setNewProduct(p); setShowProductModal(true)}} className="p-3 bg-gold/10 rounded-xl text-gold hover:bg-gold hover:text-dark-nav transition-colors"><Edit2 size={20}/></button><button onClick={()=>deleteItem('products', p.id)} className="p-3 bg-red-600/10 rounded-xl text-red-500 hover:bg-red-600 hover:text-white transition-colors"><Trash2 size={20}/></button></div></div>))}
-                                    </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {products.map(p => (
+                                        <div key={p.id} className="glass-card p-6 rounded-3xl flex items-center gap-4">
+                                            <div className="w-16 h-16 bg-white/5 rounded-xl overflow-hidden border border-gold/10">
+                                                <img src={p.image || LOGO_URL} className="w-full h-full object-cover"/>
+                                            </div>
+                                            <div className="flex-1">
+                                                <h4 className="font-bold text-gold truncate">{p.name}</h4>
+                                                <p className="text-lg font-black text-white">S/ {p.price}</p>
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                <button onClick={()=>{setEditingProduct(p); setNewProduct(p); setShowProductModal(true)}} className="p-2 text-gold-light hover:text-gold"><Edit2 size={18}/></button>
+                                                <button onClick={async ()=>{if(confirm("¿Eliminar?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', p.id))}} className="p-2 text-red-400 hover:text-red-500"><Trash2 size={18}/></button>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         ) : (
-                            /* --- VISTA CLIENTE LUJO --- */
+                            /* --- VISTA CLIENTE --- */
                             <>
-                                {/* 1. BANNER LUJO */}
-                                <div className="relative w-full h-[600px] overflow-hidden bg-dark">
-                                    {BANNER_SLIDES.map((slide, index) => (
-                                        <div key={slide.id} className={`absolute inset-0 transition-opacity duration-1500 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-                                            <img src={slide.img} className="w-full h-full object-cover opacity-70 scale-105 animate-pulse-slow" style={{animationDuration: '20s'}} />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/60 to-transparent"></div>
-                                            <div className="absolute inset-0 flex items-center justify-center text-center px-4">
-                                                <div className="max-w-3xl animate-slide-up">
-                                                    <img src={LOGO_URL} alt="COLKA" className="h-24 mx-auto mb-8 filter drop-shadow-[0_4px_8px_rgba(212,175,55,0.5)]" />
-                                                    <h2 className="text-5xl md:text-7xl font-black text-gold leading-tight mb-6 tracking-tight font-serif drop-shadow-lg">{slide.title}</h2>
-                                                    <p className="text-2xl text-gold-light/90 font-light mb-10 drop-shadow-md tracking-wide">{slide.subtitle}</p>
-                                                    <button onClick={()=>window.scrollTo(0, 700)} className="bg-gold text-dark-nav px-10 py-4 rounded-full font-bold hover:bg-gold-hover transition-all shadow-lg shadow-gold/30 text-lg tracking-wider flex items-center gap-2 mx-auto group">Explorar Colección <ChevronRight className="group-hover:translate-x-1 transition-transform"/></button>
+                                <header className="text-center mb-16 animate-slide-up">
+                                    <h1 className="text-5xl md:text-7xl font-black text-white mb-4 font-serif gold-glow tracking-tighter italic">Inversiones COLKA</h1>
+                                    <p className="text-gold-light/80 text-lg md:text-xl max-w-2xl mx-auto font-light tracking-wide">Excelencia tecnológica bajo el ala del poder.</p>
+                                    <div className="mt-10 relative max-w-md mx-auto">
+                                        <Search className="absolute left-4 top-3.5 text-gold/40" size={20}/>
+                                        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Busca tu próximo equipo..." className="w-full bg-white/5 border border-gold/20 rounded-full py-3.5 pl-12 pr-6 text-white focus:border-gold outline-none transition-all" />
+                                    </div>
+                                </header>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+                                    {filteredProducts.map(p => (
+                                        <div key={p.id} className="glass-card rounded-[2.5rem] p-5 flex flex-col group">
+                                            <div className="bg-white/5 rounded-[2rem] aspect-square mb-6 flex items-center justify-center p-6 border border-white/5 overflow-hidden">
+                                                <img src={p.image || LOGO_URL} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <span className="text-[10px] font-black uppercase text-gold/60 tracking-widest">{p.category}</span>
+                                                <h3 className="text-xl font-bold text-white mb-2 leading-tight">{p.name}</h3>
+                                                <div className="flex justify-between items-end mt-4">
+                                                    <p className="text-2xl font-black text-gold">S/ {p.price}</p>
+                                                    <button onClick={()=>addToCart(p)} className="bg-gold text-black p-3 rounded-full hover:scale-110 transition-all shadow-lg shadow-gold/20">
+                                                        <Plus size={24}/>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
                                     ))}
-                                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 z-20">
-                                        {BANNER_SLIDES.map((_, idx) => (<button key={idx} onClick={() => setCurrentSlide(idx)} className={`h-2 rounded-full transition-all duration-500 ${idx === currentSlide ? 'w-10 bg-gold' : 'w-2 bg-gold/30 hover:bg-gold/50'}`} />))}
-                                    </div>
                                 </div>
-
-                                <div className="max-w-7xl mx-auto px-4 relative z-10">
-                                    {/* 2. ICONOS DE GARANTÍA LUJO */}
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20 -mt-12">
-                                        {[
-                                            {icon: <ShieldCheck size={32}/>, t: "Garantía Premium", d: "Respaldo total en tu inversión."},
-                                            {icon: <Truck size={32}/>, t: "Envío Exclusivo", d: "Entrega segura a tu puerta."},
-                                            {icon: <Zap size={32}/>, t: "Soporte VIP", d: "Atención prioritaria experta."},
-                                            {icon: <Star size={32}/>, t: "Calidad Certificada", d: "Solo productos auténticos."},
-                                        ].map((item, i) => (
-                                            <div key={i} className="bg-dark-card p-8 rounded-[2rem] shadow-2xl shadow-black/30 flex flex-col items-center text-center border border-gold/20 backdrop-blur-md card-hover group">
-                                                <div className="text-gold mb-4 group-hover:scale-110 transition-transform filter drop-shadow-[0_2px_4px_rgba(212,175,55,0.4)]">{item.icon}</div>
-                                                <h4 className="font-bold text-lg text-gold font-serif mb-2">{item.t}</h4>
-                                                <p className="text-sm text-gold-light/70">{item.d}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* 3. FILTROS Y PRODUCTOS LUJO */}
-                                    <div className="flex flex-col md:flex-row gap-8 items-center justify-between mb-16 bg-dark-card p-6 rounded-[2.5rem] border border-gold/10 shadow-inner">
-                                        <div className="relative w-full md:w-[30rem]"><Search className="absolute left-5 top-4 text-gold/50" size={22}/><input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="Buscar la excelencia..." className="w-full bg-dark/50 border border-gold/20 shadow-sm rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-gold transition-all font-medium text-gold-light placeholder:text-gold-light/30"/></div>
-                                        <div className="flex gap-3 overflow-x-auto w-full md:w-auto pb-2 hide-scroll"><button onClick={()=>setActiveCategory('Todos')} className={`px-6 py-3 rounded-full text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap border ${activeCategory==='Todos' ? 'bg-gold text-dark-nav border-gold shadow-lg shadow-gold/20' : 'bg-dark/50 text-gold-light border-gold/20 hover:bg-gold/10 hover:border-gold/40'}`}><Store size={16}/> Todos</button>{categories.map(c => (<button key={c.id} onClick={()=>setActiveCategory(c.name)} className={`px-6 py-3 rounded-full text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap border ${activeCategory===c.name ? 'bg-gold text-dark-nav border-gold shadow-lg shadow-gold/20' : 'bg-dark/50 text-gold-light border-gold/20 hover:bg-gold/10 hover:border-gold/40'}`}>{getCategoryIcon(c.name)} {c.name}</button>))}</div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-24">
-                                        {filteredProducts.map(p => (
-                                            <div key={p.id} className="group bg-dark-card rounded-[3rem] p-5 hover:shadow-2xl hover:shadow-gold/10 transition-all duration-500 border border-gold/10 flex flex-col card-hover">
-                                                <div className="bg-dark/50 rounded-[2.5rem] aspect-[4/5] mb-6 flex items-center justify-center relative overflow-hidden group-hover:border-gold/30 border border-transparent transition-all p-6">
-                                                    {p.image ? (<img src={p.image} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]"/>) : <Smartphone size={72} className="text-gold/20"/>}
-                                                    <span className="absolute top-5 left-5 bg-dark-nav/90 backdrop-blur-md px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-widest text-gold border border-gold/20 shadow-sm">{p.category}</span>
-                                                </div>
-                                                <div className="px-3 pb-3 flex-1 flex flex-col">
-                                                    <h3 className="font-bold text-xl leading-tight mb-3 text-gold font-serif">{p.name}</h3>
-                                                    <p className="text-sm text-gold-light/60 line-clamp-2 mb-8 leading-relaxed font-light">{p.description || "Experimenta la cima de la tecnología y el diseño."}</p>
-                                                    <div className="mt-auto flex items-center justify-between">
-                                                        <div><span className="text-[11px] font-bold text-gold/70 uppercase tracking-widest block mb-1">Precio Exclusivo</span><span className="text-3xl font-black text-white">S/ {p.price}</span></div>
-                                                        <button onClick={()=>addToCart(p)} className="bg-gold text-dark-nav w-14 h-14 rounded-full flex items-center justify-center hover:bg-gold-hover transition-all shadow-lg shadow-gold/30 active:scale-90 group-hover:rotate-90 duration-500"><Plus size={28}/></button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    {filteredProducts.length === 0 && <div className="text-center py-32 text-gold-light/40 italic text-xl border-2 border-dashed border-gold/20 rounded-[3rem]">No se encontraron productos exclusivos en esta selección.</div>}
-
-                                    {/* 4. SECCIÓN TESTIMONIOS LUJO */}
-                                    <div className="mb-24 bg-dark-card rounded-[4rem] p-16 relative overflow-hidden border border-gold/20 shadow-2xl">
-                                        <div className="absolute top-0 right-0 w-96 h-96 bg-gold/10 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/2"></div>
-                                        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gold/5 rounded-full blur-[150px] translate-y-1/2 -translate-x-1/2"></div>
-                                        <div className="text-center max-w-3xl mx-auto mb-16 relative z-10">
-                                            <h2 className="text-4xl md:text-5xl font-black mb-4 text-gold font-serif">Voces de la Excelencia</h2>
-                                            <p className="text-gold-light/80 text-lg">La satisfacción de nuestros clientes más exigentes es nuestro mayor aval.</p>
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 relative z-10">
-                                            {REVIEWS.map(r => (
-                                                <div key={r.id} className="bg-dark/40 backdrop-blur-md p-8 rounded-[2.5rem] border border-gold/10 hover:border-gold/30 transition-all card-hover">
-                                                    <div className="flex gap-1 text-gold mb-6 filter drop-shadow-[0_2px_4px_rgba(212,175,55,0.4)]">{[...Array(r.stars)].map((_,i)=><Star key={i} size={20} fill="currentColor"/>)}</div>
-                                                    <p className="text-lg text-gold-light/90 mb-6 leading-relaxed italic font-light">"{r.text}"</p>
-                                                    <div>
-                                                        <p className="font-bold text-gold text-lg">{r.name}</p>
-                                                        <p className="text-sm text-gold/60 uppercase tracking-wider font-bold">{r.role}</p>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* 5. SECCIÓN UBICACIÓN Y CONTACTO LUJO */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-24 items-center bg-dark-card p-12 rounded-[4rem] border border-gold/20 shadow-2xl">
-                                        <div className="space-y-10">
-                                            <div>
-                                                <h2 className="text-4xl font-black text-gold mb-4 tracking-tight font-serif">Visita Nuestra Boutique</h2>
-                                                <p className="text-gold-light/80 text-lg leading-relaxed">Experimenta el lujo en persona. Ubicados en el corazón de Colcabamba, te esperamos para brindarte una atención personalizada.</p>
-                                            </div>
-                                            <div className="space-y-8">
-                                                <div className="flex gap-5 items-start group">
-                                                    <div className="w-14 h-14 bg-gold/10 text-gold rounded-2xl flex items-center justify-center shrink-0 border border-gold/30 group-hover:bg-gold group-hover:text-dark-nav transition-all shadow-lg shadow-gold/10"><MapPin size={28}/></div>
-                                                    <div><h4 className="font-bold text-gold text-lg mb-1">Dirección Exclusiva</h4><p className="text-gold-light/70 text-base">Av. Principal s/n, Colcabamba, Tayacaja.</p></div>
-                                                </div>
-                                                <div className="flex gap-5 items-start group">
-                                                    <div className="w-14 h-14 bg-gold/10 text-gold rounded-2xl flex items-center justify-center shrink-0 border border-gold/30 group-hover:bg-gold group-hover:text-dark-nav transition-all shadow-lg shadow-gold/10"><Phone size={28}/></div>
-                                                    <div><h4 className="font-bold text-gold text-lg mb-1">Concierge WhatsApp</h4><p className="text-gold-light/70 text-base">983 200 830</p></div>
-                                                </div>
-                                                <div className="flex gap-5 items-start group">
-                                                    <div className="w-14 h-14 bg-gold/10 text-gold rounded-2xl flex items-center justify-center shrink-0 border border-gold/30 group-hover:bg-gold group-hover:text-dark-nav transition-all shadow-lg shadow-gold/10"><Clock size={28}/></div>
-                                                    <div><h4 className="font-bold text-gold text-lg mb-1">Horario Boutique</h4><p className="text-gold-light/70 text-base">Lun - Sab: 9:00 AM - 8:00 PM</p></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="h-[500px] bg-dark rounded-[3rem] overflow-hidden shadow-2xl border-2 border-gold/30 transform rotate-1 hover:rotate-0 transition-all duration-700 filter grayscale hover:grayscale-0 relative">
-                                            <div className="absolute inset-0 border-4 border-gold/50 rounded-[3rem] pointer-events-none z-10"></div>
-                                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.666606869403!2d-74.67385668518716!3d-12.06649799145452!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x910e9646b0d3c0c9%3A0x6e2a2c070868725!2sColcabamba!5e0!3m2!1ses!2spe!4v1620000000000!5m2!1ses!2spe" width="100%" height="100%" style={{border:0, filter: 'invert(90%) hue-rotate(180deg)'}} allowFullScreen loading="lazy"></iframe>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* 6. FOOTER LUJO */}
-                                <footer className="bg-dark-nav border-t border-gold/20 pt-20 pb-10 relative">
-                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                         <img src={LOGO_URL} alt="COLKA" className="h-20 filter drop-shadow-[0_2px_4px_rgba(212,175,55,0.5)] bg-dark-nav p-2 rounded-full border border-gold/20" />
-                                    </div>
-                                    <div className="max-w-7xl mx-auto px-4 pt-8">
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16 text-center md:text-left">
-                                            <div className="col-span-1 md:col-span-1">
-                                                <h2 className="text-3xl font-black text-gold font-serif mb-6 tracking-wider">COLKA</h2>
-                                                <p className="text-sm text-gold-light/60 leading-relaxed mb-6">Redefiniendo la experiencia tecnológica en Tayacaja. Lujo, innovación y un servicio sin igual.</p>
-                                                <div className="flex gap-4 justify-center md:justify-start">
-                                                    <a href="#" className="w-12 h-12 bg-dark-card rounded-full flex items-center justify-center text-gold/70 hover:bg-gold hover:text-dark-nav transition-all border border-gold/20 hover:border-transparent shadow-md"><Facebook size={20}/></a>
-                                                    <a href="#" className="w-12 h-12 bg-dark-card rounded-full flex items-center justify-center text-gold/70 hover:bg-gold hover:text-dark-nav transition-all border border-gold/20 hover:border-transparent shadow-md"><Instagram size={20}/></a>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-gold mb-6 uppercase tracking-widest text-sm">Colecciones</h4>
-                                                <ul className="text-sm text-gold-light/70 space-y-4">
-                                                    <li><a href="#" className="hover:text-gold transition-colors">Smartphones de Lujo</a></li>
-                                                    <li><a href="#" className="hover:text-gold transition-colors">Laptops Ejecutivas</a></li>
-                                                    <li><a href="#" className="hover:text-gold transition-colors">Audio de Alta Fidelidad</a></li>
-                                                    <li><a href="#" className="hover:text-gold transition-colors">Accesorios Premium</a></li>
-                                                </ul>
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-gold mb-6 uppercase tracking-widest text-sm">Atención al Cliente</h4>
-                                                <ul className="text-sm text-gold-light/70 space-y-4">
-                                                    <li><a href="#" className="hover:text-gold transition-colors">Preguntas Frecuentes</a></li>
-                                                    <li><a href="#" className="hover:text-gold transition-colors">Envíos y Entregas VIP</a></li>
-                                                    <li><a href="#" className="hover:text-gold transition-colors">Política de Garantía</a></li>
-                                                    <li><a href="#" className="hover:text-gold transition-colors">Agendar Cita</a></li>
-                                                </ul>
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-gold mb-6 uppercase tracking-widest text-sm">Contacto Directo</h4>
-                                                <div className="flex gap-4 items-center justify-center md:justify-start group">
-                                                    <a href={`https://wa.me/${MY_PHONE}`} target="_blank" className="w-12 h-12 bg-gold/10 rounded-full flex items-center justify-center text-gold hover:bg-gold hover:text-dark-nav transition-all border border-gold/30 shadow-lg group-hover:animate-pulse-gold"><Phone size={20}/></a>
-                                                    <span className="text-lg font-bold text-gold group-hover:text-gold-light transition-colors">{MY_PHONE}</span>
-                                                </div>
-                                                <p className="text-xs text-gold-light/50 mt-4">Disponible 24/7 para consultas urgentes.</p>
-                                            </div>
-                                        </div>
-                                        <div className="border-t border-gold/10 pt-10 flex flex-col md:flex-row justify-between items-center text-xs text-gold-light/40 tracking-wider">
-                                            <p>© 2026 Inversiones Colka. Derechos Reservados. Una marca de lujo.</p>
-                                            <p className="mt-4 md:mt-0 flex items-center gap-2">Desarrollado con <span className="text-red-500">❤</span> por <span className="text-gold font-bold">Julio Cesar Valladolid Acevedo</span>.</p>
-                                        </div>
-                                    </div>
-                                </footer>
                             </>
                         )}
                     </div>
 
-                    {/* LOGIN ADMIN LUJO */}
+                    {/* FOOTER */}
+                    <footer className="mt-20 py-12 border-t border-gold/10 bg-black/40 backdrop-blur-md">
+                        <div className="max-w-7xl mx-auto px-4 text-center">
+                            <img src={LOGO_URL} className="h-10 mx-auto mb-6 opacity-50 grayscale hover:grayscale-0 transition-all" />
+                            <p className="text-gold-light/40 text-xs tracking-widest uppercase">© 2026 Inversiones Colka - Julio Cesar Valladolid Acevedo</p>
+                        </div>
+                    </footer>
+
+                    {/* LOGIN MODAL */}
                     {showLogin && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-dark/80 backdrop-blur-md animate-fade-in">
-                            <form onSubmit={handleLogin} className="bg-dark-card rounded-[3rem] p-12 w-full max-w-md shadow-2xl text-center relative overflow-hidden border-2 border-gold/30">
-                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold-dark via-gold to-gold-dark"></div>
-                                <div className="w-20 h-20 bg-dark/50 rounded-3xl flex items-center justify-center mx-auto mb-8 text-gold shadow-inner border border-gold/20"><Lock size={36}/></div>
-                                <h3 className="text-3xl font-black mb-3 text-gold font-serif">Acceso Julio</h3>
-                                <p className="text-sm text-gold-light/70 mb-10 font-medium tracking-wider">Introduce tu llave maestra para acceder al panel.</p>
-                                <input type="password" autoFocus value={passwordInput} onChange={e=>setPasswordInput(e.target.value)} placeholder="••••••" className="w-full bg-dark/50 border border-gold/30 rounded-2xl p-5 mb-6 text-center font-bold outline-none focus:border-gold transition-all text-2xl placeholder:text-gold-light/20 text-gold tracking-widest"/>
-                                <button type="submit" className="w-full bg-gold text-dark-nav py-5 rounded-2xl font-bold shadow-xl shadow-gold/20 hover:bg-gold-hover hover:scale-105 transition-all text-lg tracking-wider">Desbloquear Panel</button>
-                                <button type="button" onClick={()=>setShowLogin(false)} className="mt-6 text-xs font-bold text-gold-light/50 hover:text-gold uppercase tracking-widest transition-colors">Cancelar</button>
-                            </form>
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md">
+                            <div className="glass-card p-10 rounded-[3rem] w-full max-w-sm text-center">
+                                <h3 className="text-2xl font-black text-gold mb-6 font-serif">Acceso Julio</h3>
+                                <input type="password" autoFocus value={passwordInput} onChange={e=>setPasswordInput(e.target.value)} placeholder="Contraseña" className="w-full bg-white/5 border border-gold/20 rounded-2xl p-4 text-center text-gold mb-6 outline-none focus:border-gold" />
+                                <div className="flex gap-4">
+                                    <button onClick={()=>setShowLogin(false)} className="flex-1 text-gold-light/50 font-bold">Cancelar</button>
+                                    <button onClick={()=>{if(passwordInput==='hola123'){setIsAdmin(true);setShowLogin(false);setPasswordInput('')}else{alert("Error")}} } className="flex-1 bg-gold text-black py-4 rounded-2xl font-bold">Entrar</button>
+                                </div>
+                            </div>
                         </div>
                     )}
-                    
-                    {/* MODAL PRODUCTO (ADMIN) LUJO */}
+
+                    {/* MODAL PRODUCTO (ADMIN) */}
                     {showProductModal && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-dark/80 backdrop-blur-md animate-fade-in">
-                            <form onSubmit={saveProduct} className="bg-dark-card w-full max-w-2xl rounded-[3rem] p-12 shadow-2xl overflow-y-auto max-h-[95vh] relative border-2 border-gold/30">
-                                <h3 className="text-4xl font-black mb-3 text-gold font-serif">{editingProduct ? 'Editar' : 'Nuevo'} Ítem de Lujo</h3>
-                                <p className="text-gold-light/60 text-sm font-bold uppercase tracking-widest mb-10 border-b border-gold/10 pb-4">Gestión de Inventario Exclusivo</p>
-                                <div className="space-y-8">
-                                    <div><label className="text-xs font-bold text-gold uppercase ml-3 mb-2 block tracking-wider">Nombre del Producto</label><input required value={newProduct.name} onChange={e=>setNewProduct({...newProduct, name:e.target.value})} className="w-full bg-dark/50 border border-gold/20 p-5 rounded-3xl font-bold outline-none focus:border-gold transition-all text-gold-light placeholder:text-gold-light/30 text-lg" placeholder="Ej: iPhone 15 Pro Max Gold"/></div>
-                                    <div className="flex flex-col md:flex-row gap-8"><div className="w-full md:w-1/2"><label className="text-xs font-bold text-gold uppercase ml-3 mb-2 block tracking-wider">Categoría</label><select required value={newProduct.category} onChange={e=>setNewProduct({...newProduct, category:e.target.value})} className="w-full bg-dark/50 border border-gold/20 p-5 rounded-3xl font-bold outline-none focus:border-gold transition-all cursor-pointer text-gold-light appearance-none"><option value="" className="text-dark-nav">Seleccionar...</option>{categories.map(c=><option key={c.id} value={c.name} className="text-dark-nav">{c.name}</option>)}</select></div><div className="w-full md:w-1/2"><label className="text-xs font-bold text-gold uppercase ml-3 mb-2 block tracking-wider">Precio (S/)</label><input required type="number" step="0.01" value={newProduct.price} onChange={e=>setNewProduct({...newProduct, price:e.target.value})} className="w-full bg-dark/50 border border-gold/20 p-5 rounded-3xl font-bold outline-none focus:border-gold transition-all text-gold-light placeholder:text-gold-light/30 text-lg" placeholder="0.00"/></div></div>
-                                    <div><label className="text-xs font-bold text-gold uppercase ml-3 mb-2 block tracking-wider">URL Imagen HD</label><input value={newProduct.image} onChange={e=>setNewProduct({...newProduct, image:e.target.value})} className="w-full bg-dark/50 border border-gold/20 p-5 rounded-3xl font-bold outline-none focus:border-gold transition-all text-gold-light placeholder:text-gold-light/30" placeholder="https://..."/></div>
-                                    <div><label className="text-xs font-bold text-gold uppercase ml-3 mb-2 block tracking-wider">Descripción Detallada</label><textarea rows="4" value={newProduct.description} onChange={e=>setNewProduct({...newProduct, description:e.target.value})} className="w-full bg-dark/50 border border-gold/20 p-5 rounded-3xl font-bold outline-none focus:border-gold transition-all resize-none text-gold-light placeholder:text-gold-light/30" placeholder="Detalles que enamoran..."></textarea></div>
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+                            <form onSubmit={async (e)=>{e.preventDefault(); if(editingProduct) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', editingProduct.id), newProduct); else await addDoc(productsCol, newProduct); setShowProductModal(false);}} className="glass-card w-full max-w-xl rounded-[3rem] p-10 overflow-y-auto max-h-[90vh]">
+                                <h3 className="text-3xl font-black text-gold mb-8 font-serif">Gestionar Ítem</h3>
+                                <div className="space-y-6">
+                                    <input required placeholder="Nombre del Producto" value={newProduct.name} onChange={e=>setNewProduct({...newProduct, name:e.target.value})} className="w-full bg-white/5 border border-gold/10 p-4 rounded-2xl text-white outline-none focus:border-gold"/>
+                                    <div className="flex gap-4">
+                                        <input required placeholder="Precio (S/)" type="number" step="0.01" value={newProduct.price} onChange={e=>setNewProduct({...newProduct, price:e.target.value})} className="w-1/2 bg-white/5 border border-gold/10 p-4 rounded-2xl text-white outline-none focus:border-gold"/>
+                                        <select required value={newProduct.category} onChange={e=>setNewProduct({...newProduct, category:e.target.value})} className="w-1/2 bg-white/5 border border-gold/10 p-4 rounded-2xl text-white outline-none focus:border-gold">
+                                            <option value="">Categoría...</option>
+                                            <option value="Celulares" className="bg-dark">Celulares</option>
+                                            <option value="Laptops" className="bg-dark">Laptops</option>
+                                            <option value="Accesorios" className="bg-dark">Accesorios</option>
+                                        </select>
+                                    </div>
+                                    <input placeholder="URL Imagen (Usa Postimages)" value={newProduct.image} onChange={e=>setNewProduct({...newProduct, image:e.target.value})} className="w-full bg-white/5 border border-gold/10 p-4 rounded-2xl text-white outline-none focus:border-gold"/>
+                                    <textarea placeholder="Descripción" rows="3" value={newProduct.description} onChange={e=>setNewProduct({...newProduct, description:e.target.value})} className="w-full bg-white/5 border border-gold/10 p-4 rounded-2xl text-white outline-none focus:border-gold resize-none"></textarea>
                                 </div>
-                                <div className="flex gap-6 mt-12"><button type="button" onClick={()=>setShowProductModal(false)} className="flex-1 py-5 rounded-3xl font-bold text-gold-light/70 bg-dark/50 hover:bg-dark/80 transition-colors border border-gold/10 tracking-wider">Cancelar</button><button type="submit" className="flex-1 bg-gold text-dark-nav py-5 rounded-3xl font-bold shadow-xl shadow-gold/20 hover:bg-gold-hover hover:scale-105 transition-all tracking-wider text-lg">Guardar en Inventario</button></div>
+                                <div className="flex gap-4 mt-10">
+                                    <button type="button" onClick={()=>setShowProductModal(false)} className="flex-1 text-gold-light/50">Cerrar</button>
+                                    <button type="submit" className="flex-1 bg-gold text-black py-4 rounded-2xl font-bold">Guardar Cambios</button>
+                                </div>
                             </form>
                         </div>
                     )}
-                    
-                    {/* CARRITO LUJO */}
+
+                    {/* CARRITO SIDEBAR */}
                     {isCartOpen && (
-                        <div className="fixed inset-0 z-[100] flex justify-end animate-fade-in">
-                            <div className="absolute inset-0 bg-dark/80 backdrop-blur-sm transition-opacity" onClick={()=>setIsCartOpen(false)}></div>
-                            <div className="relative w-full max-w-md bg-dark-card h-full shadow-2xl p-10 flex flex-col animate-slide-up border-l-2 border-gold/30">
-                                <div className="flex justify-between items-center mb-10 pb-8 border-b border-gold/20"><div><h3 className="text-4xl font-black italic text-gold font-serif">Tu Selección</h3><p className="text-xs font-bold text-gold-light/60 uppercase tracking-widest mt-2">Productos listos para el éxito</p></div><button onClick={()=>setIsCartOpen(false)} className="bg-dark/50 p-4 rounded-full hover:bg-dark/80 transition-colors border border-gold/20 text-gold"><X size={28}/></button></div>
-                                <div className="flex-1 overflow-y-auto space-y-8 pr-4 hide-scroll">
-                                    {cart.length===0 && <div className="h-full flex flex-col items-center justify-center opacity-40"><ShoppingCart size={80} className="mb-6 text-gold/50"/><p className="font-bold text-gold-light/70 text-lg">Tu carrito espera ser llenado de lujo.</p></div>}
-                                    {cart.map(i => (<div key={i.id} className="flex gap-5 items-center bg-dark/50 p-5 rounded-[2rem] border border-gold/10 card-hover"><div className="w-24 h-24 bg-dark-card rounded-2xl overflow-hidden flex-shrink-0 border border-gold/20 p-3">{i.image ? <img src={i.image} className="w-full h-full object-contain"/> : <Smartphone className="m-auto mt-4 text-gold/30" size={32}/>}</div><div className="flex-1"><h4 className="font-bold text-gold text-base line-clamp-1 font-serif">{i.name}</h4><p className="text-[10px] font-bold text-gold-light/60 uppercase mb-2 tracking-wider">{i.category}</p><div className="flex items-center gap-4"><span className="text-xs bg-dark-card border border-gold/20 px-3 py-1.5 rounded-xl font-bold shadow-sm text-gold-light">{i.qty} un.</span><span className="font-black text-gold text-xl">S/ {(i.price*i.qty).toFixed(2)}</span></div></div><button onClick={()=>removeFromCart(i.id)} className="text-gold-light/40 hover:text-red-500 p-3 transition-colors"><Trash2 size={22}/></button></div>))}
+                        <div className="fixed inset-0 z-[100] flex justify-end">
+                            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={()=>setIsCartOpen(false)}></div>
+                            <div className="relative w-full max-w-md bg-dark-nav border-l border-gold/20 h-full p-8 flex flex-col shadow-2xl">
+                                <div className="flex justify-between items-center mb-10 border-b border-gold/10 pb-6">
+                                    <h3 className="text-3xl font-black text-gold font-serif italic">Tu Pedido</h3>
+                                    <button onClick={()=>setIsCartOpen(false)} className="text-gold-light/40"><X size={32}/></button>
                                 </div>
-                                {cart.length>0 && (<div className="pt-8 border-t border-gold/20 mt-8"><div className="flex justify-between items-end mb-8"><span className="font-bold text-gold-light/60 uppercase text-xs tracking-[0.2em]">Total Estimado</span><span className="text-5xl font-black tracking-tighter text-gold font-serif">S/ {cartTotal.toFixed(2)}</span></div><button onClick={finalizarPedido} className="w-full bg-gold text-dark-nav py-6 rounded-[3rem] font-black text-xl shadow-2xl shadow-gold/30 hover:bg-gold-hover transition-all active:scale-95 flex justify-center gap-4 items-center group tracking-wider"><Smartphone fill="currentColor" size={28} className="group-hover:animate-bounce"/> SOLICITAR VÍA WHATSAPP VIP</button></div>)}
+                                <div className="flex-1 overflow-y-auto space-y-6 hide-scroll">
+                                    {cart.map(i => (
+                                        <div key={i.id} className="flex gap-4 items-center bg-white/5 p-4 rounded-2xl border border-gold/5">
+                                            <div className="w-16 h-16 bg-white/10 rounded-lg overflow-hidden flex-shrink-0">
+                                                <img src={i.image || LOGO_URL} className="w-full h-full object-cover"/>
+                                            </div>
+                                            <div className="flex-1">
+                                                <h4 className="font-bold text-white text-sm line-clamp-1">{i.name}</h4>
+                                                <div className="flex items-center gap-4 mt-1">
+                                                    <span className="text-xs text-gold/60 font-black">{i.qty} un.</span>
+                                                    <span className="font-bold text-gold text-sm">S/ {(i.price*i.qty).toFixed(2)}</span>
+                                                </div>
+                                            </div>
+                                            <button onClick={()=>removeFromCart(i.id)} className="text-gold-light/20 hover:text-red-500 transition-colors"><Trash2 size={20}/></button>
+                                        </div>
+                                    ))}
+                                </div>
+                                {cart.length > 0 && (
+                                    <div className="pt-8 mt-6 border-t border-gold/10">
+                                        <div className="flex justify-between items-end mb-8">
+                                            <span className="text-xs text-gold-light/40 uppercase font-black">Total de Inversión</span>
+                                            <span className="text-4xl font-black text-gold font-serif tracking-tighter">S/ {cart.reduce((a,b)=>a+(b.price*b.qty),0).toFixed(2)}</span>
+                                        </div>
+                                        <button onClick={finalizarPedido} className="w-full bg-green-600 text-white py-5 rounded-[2rem] font-black text-lg shadow-xl shadow-green-900/20 active:scale-95 transition-all">
+                                            ENVIAR A WHATSAPP
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
                 </div>
             );
         }
+
         const root = createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
