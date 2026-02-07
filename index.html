@@ -1,168 +1,549 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INVERSIONES COLKA | Premium Store</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --primario: #1b4b8a;
-            --dorado: #c5a059;
-            --fondo: #ffffff;
-            --gris-claro: #f8f9fa;
-            --texto: #2d3436;
-        }
+import React, { useState, useEffect, useMemo } from 'react';
+import { initializeApp } from 'firebase/app';
+import { 
+  getFirestore, collection, addDoc, updateDoc, deleteDoc, 
+  doc, onSnapshot, query, setDoc 
+} from 'firebase/firestore';
+import { 
+  getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken 
+} from 'firebase/auth';
+import { 
+  ShoppingCart, Search, Plus, Trash2, Edit2, 
+  ChevronRight, X, LayoutDashboard, Store, 
+  Package, Tag, MapPin, Phone, Smartphone, 
+  Zap, ShieldCheck, Image as ImageIcon, Check
+} from 'lucide-react';
 
-        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--fondo); color: var(--texto); scroll-behavior: smooth; }
+// --- CONFIGURACIÓN DE AMBIENTE ---
+const firebaseConfig = JSON.parse(__firebase_config);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'inversiones-colka-v1';
 
-        /* NAV ELEGANTE */
-        nav { background: white; padding: 20px; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .logo { font-size: 24px; font-weight: 900; color: var(--primario); letter-spacing: 2px; text-transform: uppercase; }
+// Referencias de Firestore (Regla 1)
+const productsCol = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+const categoriesCol = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
 
-        /* SLIDER PROFESIONAL */
-        .slider-container { width: 100%; height: 450px; overflow: hidden; position: relative; }
-        .slides { display: flex; width: 100%; height: 100%; transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-        .slide { 
-            min-width: 100%; height: 100%; position: relative;
-            display: flex; align-items: center; justify-content: center;
-            background-size: cover; background-position: center;
-        }
-        .slide-content { background: rgba(0,0,0,0.4); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
-        .slide h2 { font-size: 3rem; margin: 0; font-weight: 800; }
-        .slide p { font-size: 1.2rem; margin: 15px 0; }
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [cart, setCart] = useState([]);
+  const [search, setSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState('Todos');
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-        /* GRILLA DE PRODUCTOS */
-        .seccion { max-width: 1200px; margin: 60px auto; padding: 0 20px; }
-        .titulo-seccion { text-align: center; margin-bottom: 50px; }
-        .titulo-seccion h2 { font-size: 2rem; color: var(--primario); position: relative; display: inline-block; }
-        .titulo-seccion h2::after { content: ''; width: 50px; height: 3px; background: var(--dorado); position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); }
+  // Estados Formulario Producto
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [newProduct, setNewProduct] = useState({
+    name: '', price: '', category: '', description: '', image: '', stock: 'Disponible'
+  });
+  
+  // Estado Categoría
+  const [newCatName, setNewCatName] = useState('');
 
-        .grid-productos { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
-        .producto-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid #eee; }
-        .producto-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-        
-        .producto-img { width: 100%; height: 250px; object-fit: cover; }
-        .producto-info { padding: 20px; text-align: center; }
-        .producto-info h3 { margin: 0; font-size: 1.1rem; color: #333; }
-        .precio { font-size: 1.5rem; font-weight: 800; color: var(--primario); margin: 10px 0; }
-        .btn-comprar { display: inline-block; background: var(--primario); color: white; text-decoration: none; padding: 10px 25px; border-radius: 5px; font-weight: 600; transition: 0.3s; }
-        .btn-comprar:hover { background: var(--dorado); }
+  // 1. AUTENTICACIÓN (Regla 3)
+  useEffect(() => {
+    const initAuth = async () => {
+      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+        await signInWithCustomToken(auth, __initial_auth_token);
+      } else {
+        await signInAnonymously(auth);
+      }
+    };
+    initAuth();
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return () => unsubscribe();
+  }, []);
 
-        /* CONTACTO */
-        .contacto { background: var(--gris-claro); padding: 80px 20px; text-align: center; }
-        .contacto-grid { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; margin-top: 40px; }
-        .contacto-item { flex: 1; min-width: 250px; max-width: 300px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
-        .contacto-item i { font-size: 40px; color: var(--dorado); margin-bottom: 15px; }
+  // 2. ESCUCHA DE DATOS EN TIEMPO REAL
+  useEffect(() => {
+    if (!user) return;
 
-        /* MAPA */
-        .mapa-container { width: 100%; height: 400px; filter: grayscale(0.2); border-top: 5px solid var(--primario); }
+    // Productos
+    const unsubProducts = onSnapshot(productsCol, 
+      (snap) => {
+        const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setProducts(list);
+        setLoading(false);
+      },
+      (err) => console.error("Error productos:", err)
+    );
 
-        footer { background: var(--primario); color: white; padding: 40px; text-align: center; font-size: 14px; }
-    </style>
-</head>
-<body>
+    // Categorías
+    const unsubCats = onSnapshot(categoriesCol, 
+      (snap) => {
+        const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setCategories(list);
+      },
+      (err) => console.error("Error categorías:", err)
+    );
 
-    <nav>
-        <div class="logo">INVERSIONES COLKA</div>
-    </nav>
+    return () => {
+      unsubProducts();
+      unsubCats();
+    };
+  }, [user]);
 
-    <div class="slider-container">
-        <div class="slides" id="slider">
-            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=80&w=1280')">
-                <div class="slide-content">
-                    <h2>IPHONE 15 PRO</h2>
-                    <p>La máxima potencia tecnológica en tus manos.</p>
-                </div>
-            </div>
-            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?q=80&w=1280')">
-                <div class="slide-content">
-                    <h2>ACCESORIOS GAMER</h2>
-                    <p>Audífonos y periféricos para ganar todas tus partidas.</p>
-                </div>
-            </div>
-        </div>
+  // 3. FILTRADO (Buscador y Categoría)
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
+      const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
+      const matchCat = activeCategory === 'Todos' || p.category === activeCategory;
+      return matchSearch && matchCat;
+    });
+  }, [products, search, activeCategory]);
+
+  // 4. LÓGICA DEL CARRITO
+  const addToCart = (product) => {
+    setCart(prev => {
+      const exists = prev.find(item => item.id === product.id);
+      if (exists) {
+        return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
+      }
+      return [...prev, { ...product, qty: 1 }];
+    });
+    // Pequeño feedback visual podría ir aquí
+  };
+
+  const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
+  
+  const cartTotal = cart.reduce((acc, item) => acc + (parseFloat(item.price || 0) * item.qty), 0);
+
+  const finalizarPedido = () => {
+    const itemsText = cart.map(item => `- ${item.qty}x ${item.name} (S/ ${item.price})`).join('\n');
+    const totalText = `\n*TOTAL A PAGAR: S/ ${cartTotal.toFixed(2)}*`;
+    const fullMessage = `Hola Inversiones COLKA, deseo realizar el siguiente pedido:\n\n${itemsText}${totalText}\n\nQuedo a la espera de su respuesta.`;
+    window.open(`https://wa.me/51910457625?text=${encodeURIComponent(fullMessage)}`, '_blank');
+  };
+
+  // 5. FUNCIONES ADMIN
+  const saveProduct = async (e) => {
+    e.preventDefault();
+    if (!user) return;
+    try {
+      if (editingProduct) {
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', editingProduct.id), newProduct);
+      } else {
+        await addDoc(productsCol, newProduct);
+      }
+      setShowProductModal(false);
+      setEditingProduct(null);
+      setNewProduct({ name: '', price: '', category: '', description: '', image: '', stock: 'Disponible' });
+    } catch (err) { console.error(err); }
+  };
+
+  const addCategory = async () => {
+    if (!newCatName || !user) return;
+    await addDoc(categoriesCol, { name: newCatName });
+    setNewCatName('');
+  };
+
+  const deleteItem = async (col, id) => {
+    if (window.confirm("¿Estás seguro de eliminar este elemento?")) {
+      await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', col, id));
+    }
+  };
+
+  if (loading) return (
+    <div className="h-screen flex items-center justify-center bg-white">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-black rounded-full animate-spin"></div>
+        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Cargando Inversiones Colka...</p>
+      </div>
     </div>
+  );
 
-    <section class="seccion">
-        <div class="titulo-seccion">
-            <h2>PRODUCTOS DESTACADOS</h2>
-        </div>
-        <div class="grid-productos">
-            <div class="producto-card">
-                <img src="https://images.unsplash.com/photo-1592890288564-76628a30a657?q=80&w=400" alt="Celular" class="producto-img">
-                <div class="producto-info">
-                    <h3>Samsung Galaxy S23 Ultra</h3>
-                    <div class="precio">S/ 3,450.00</div>
-                    <a href="https://wa.me/51910457625" class="btn-comprar">Consultar Stock</a>
-                </div>
-            </div>
-            <div class="producto-card">
-                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=400" alt="Audifonos" class="producto-img">
-                <div class="producto-info">
-                    <h3>Audífonos Sony WH-1000XM5</h3>
-                    <div class="precio">S/ 1,150.00</div>
-                    <a href="https://wa.me/51910457625" class="btn-comprar">Consultar Stock</a>
-                </div>
-            </div>
-            <div class="producto-card">
-                <img src="https://images.unsplash.com/photo-1625517407127-147372271842?q=80&w=400" alt="Cargador" class="producto-img">
-                <div class="producto-info">
-                    <h3>Cargador Carga Rápida 67W</h3>
-                    <div class="precio">S/ 85.00</div>
-                    <a href="https://wa.me/51910457625" class="btn-comprar">Comprar ahora</a>
-                </div>
-            </div>
-        </div>
-    </section>
+  return (
+    <div className="min-h-screen bg-[#fafafa] text-slate-900 font-sans">
+      
+      {/* NAVBAR */}
+      <nav className="bg-white border-b border-slate-100 sticky top-0 z-[60] px-4 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex flex-col items-start leading-none">
+            <span className="text-[9px] tracking-[0.5em] text-slate-400 font-medium uppercase mb-1">Inversiones</span>
+            <h1 className="text-3xl font-black text-black tracking-tighter">COLKA</h1>
+          </div>
 
-    <section class="contacto">
-        <div class="titulo-seccion">
-            <h2>CONTÁCTANOS</h2>
-        </div>
-        <div class="contacto-grid">
-            <div class="contacto-item">
-                <i class="fab fa-whatsapp"></i>
-                <h3>WhatsApp</h3>
-                <p>910457625</p>
-                <p>Atención inmediata</p>
-            </div>
-            <div class="contacto-item">
-                <i class="fab fa-facebook"></i>
-                <h3>Facebook</h3>
-                <p>Inversiones Colka</p>
-                <p>Síguenos para ofertas</p>
-            </div>
-            <div class="contacto-item">
-                <i class="fas fa-clock"></i>
-                <h3>Horario</h3>
-                <p>Lun - Sáb</p>
-                <p>9:00 AM - 8:00 PM</p>
-            </div>
-        </div>
-    </section>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsAdmin(!isAdmin)}
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all hover:bg-slate-100"
+            >
+              {isAdmin ? <Store size={18} /> : <LayoutDashboard size={18} />}
+              <span className="hidden sm:inline">{isAdmin ? 'VER TIENDA' : 'ADMIN'}</span>
+            </button>
 
-    <section class="titulo-seccion" style="margin-top: 60px;">
-        <h2>NUESTRA UBICACIÓN</h2>
-        <p style="margin-top: 15px;">Visítanos en Colcabamba, Tayacaja</p>
-    </section>
-    
-    <div class="mapa-container">
-        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15622.34567890!2d-74.6567!3d-12.4456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x910e536c4b9b9b9b%3A0x4b9b9b9b9b9b9b9b!2sColcabamba%2C%20Peru!5e0!3m2!1sen!2spe!4v1707250000000" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+            {!isAdmin && (
+              <button 
+                onClick={() => setIsCartOpen(true)}
+                className="relative bg-black text-white p-3 rounded-2xl hover:scale-105 transition-transform shadow-xl shadow-black/10"
+              >
+                <ShoppingCart size={20} />
+                {cart.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] w-6 h-6 rounded-full flex items-center justify-center border-2 border-white font-bold">
+                    {cart.length}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      {isAdmin ? (
+        /* ================= VISTA ADMINISTRADOR ================= */
+        <div className="max-w-6xl mx-auto p-6 animate-in fade-in duration-500">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+            <div>
+              <h2 className="text-3xl font-black tracking-tight">Panel de Control</h2>
+              <p className="text-slate-500 text-sm">Gestiona tus categorías y productos en tiempo real.</p>
+            </div>
+            <button 
+              onClick={() => { setEditingProduct(null); setShowProductModal(true); }}
+              className="bg-black text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-slate-800 transition-all"
+            >
+              <Plus size={20} /> Nuevo Producto
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Gestión de Categorías */}
+            <aside className="lg:col-span-1 space-y-6">
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                  <Tag size={14} /> Categorías
+                </h3>
+                <div className="flex gap-2 mb-4">
+                  <input 
+                    value={newCatName}
+                    onChange={(e) => setNewCatName(e.target.value)}
+                    placeholder="Ej: Celulares"
+                    className="flex-1 bg-slate-50 border-none rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
+                  />
+                  <button onClick={addCategory} className="bg-slate-900 text-white p-2 rounded-xl">
+                    <Plus size={18} />
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {categories.map(c => (
+                    <div key={c.id} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl group transition-all hover:bg-slate-100">
+                      <span className="text-sm font-bold">{c.name}</span>
+                      <button onClick={() => deleteItem('categories', c.id)} className="text-slate-300 hover:text-red-500">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </aside>
+
+            {/* Lista de Productos para Admin */}
+            <div className="lg:col-span-3 space-y-4">
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                <Package size={14} /> Inventario Actual ({products.length})
+              </h3>
+              {products.length === 0 && (
+                <div className="bg-white rounded-3xl p-20 text-center border border-dashed border-slate-200">
+                  <p className="text-slate-400 font-medium">No hay productos. ¡Empieza agregando uno!</p>
+                </div>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {products.map(p => (
+                  <div key={p.id} className="bg-white p-4 rounded-3xl border border-slate-100 flex items-center gap-4 hover:shadow-md transition-all">
+                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center overflow-hidden border">
+                      {p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <ImageIcon className="text-slate-200" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-slate-900 truncate">{p.name}</h4>
+                      <p className="text-[10px] font-black text-blue-500 uppercase tracking-tighter">{p.category}</p>
+                      <p className="text-sm font-black text-black mt-1">S/ {p.price}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setEditingProduct(p); setNewProduct(p); setShowProductModal(true); }} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl">
+                        <Edit2 size={18} />
+                      </button>
+                      <button onClick={() => deleteItem('products', p.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ================= VISTA CLIENTE ================= */
+        <>
+          {/* Hero Banner */}
+          <section className="relative h-[350px] bg-black flex items-center justify-center overflow-hidden">
+            <img 
+              src="https://images.unsplash.com/photo-1556656793-062ff987b50c?q=80&w=1200" 
+              className="absolute inset-0 w-full h-full object-cover opacity-40 grayscale"
+            />
+            <div className="relative z-10 text-center px-6">
+                <span className="text-blue-400 text-xs font-black tracking-[0.3em] uppercase mb-4 block">Especialistas en Tecnología</span>
+                <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter mb-4 italic uppercase">Nuevos Ingresos</h2>
+                <p className="text-slate-300 max-w-lg mx-auto text-sm md:text-base font-light">Equipos certificados y accesorios de alta gama con garantía real en Colcabamba.</p>
+            </div>
+          </section>
+
+          {/* Buscador y Categorías */}
+          <section className="sticky top-[73px] z-50 bg-[#fafafa]/80 backdrop-blur-md border-b border-slate-100 py-6">
+            <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center gap-6">
+              <div className="relative w-full md:w-1/3">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input 
+                  type="text" 
+                  placeholder="¿Qué buscas hoy?..." 
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-full py-3 pl-12 pr-6 text-sm outline-none focus:ring-2 focus:ring-black transition-all shadow-sm"
+                />
+              </div>
+              <div className="flex gap-2 overflow-x-auto w-full no-scrollbar pb-1">
+                <button 
+                  onClick={() => setActiveCategory('Todos')}
+                  className={`px-6 py-2 rounded-full text-xs font-black tracking-tighter uppercase transition-all whitespace-nowrap ${activeCategory === 'Todos' ? 'bg-black text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-400 hover:bg-slate-50'}`}
+                >
+                  Todos
+                </button>
+                {categories.map(c => (
+                  <button 
+                    key={c.id}
+                    onClick={() => setActiveCategory(c.name)}
+                    className={`px-6 py-2 rounded-full text-xs font-black tracking-tighter uppercase transition-all whitespace-nowrap ${activeCategory === c.name ? 'bg-black text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-400 hover:bg-slate-50'}`}
+                  >
+                    {c.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Grilla de Productos */}
+          <main className="max-w-7xl mx-auto px-4 py-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+              {filteredProducts.map(p => (
+                <div key={p.id} className="group flex flex-col bg-white rounded-[2rem] overflow-hidden border border-slate-100 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                  <div className="aspect-square bg-slate-50 relative overflow-hidden flex items-center justify-center p-6">
+                    {p.image ? (
+                      <img src={p.image} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" alt={p.name} />
+                    ) : (
+                      <Smartphone size={80} className="text-slate-100" />
+                    )}
+                    <span className="absolute top-6 left-6 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter text-blue-600 shadow-sm border border-blue-50">
+                      {p.category}
+                    </span>
+                  </div>
+                  <div className="p-8 flex-1 flex flex-col">
+                    <h3 className="text-xl font-black text-black mb-3 tracking-tight leading-tight group-hover:text-blue-600 transition-colors">{p.name}</h3>
+                    <p className="text-xs text-slate-500 leading-relaxed mb-6 text-justify line-clamp-3">
+                      {p.description || "Producto premium seleccionado por Inversiones COLKA para garantizar el mejor rendimiento tecnológico."}
+                    </p>
+                    <div className="mt-auto flex items-end justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase text-slate-300 tracking-widest mb-1">Precio Online</span>
+                        <span className="text-3xl font-black text-black leading-none tracking-tighter">S/ {parseFloat(p.price).toFixed(2)}</span>
+                      </div>
+                      <button 
+                        onClick={() => addToCart(p)}
+                        className="bg-black text-white p-4 rounded-2xl hover:bg-blue-600 transition-all active:scale-90 shadow-xl shadow-slate-200"
+                      >
+                        <Plus size={24} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-40">
+                <Search size={60} className="mx-auto text-slate-100 mb-6" />
+                <h3 className="text-2xl font-black text-slate-300 uppercase italic">Sin resultados</h3>
+                <p className="text-slate-400 font-medium">No encontramos productos en esta búsqueda.</p>
+              </div>
+            )}
+          </main>
+
+          {/* INFO & MAPA */}
+          <section className="bg-white py-24 border-t border-slate-100">
+            <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+              <div className="space-y-12">
+                <div>
+                  <h2 className="text-4xl font-black tracking-tighter italic uppercase mb-6">Visítanos en Tienda</h2>
+                  <p className="text-slate-500 text-lg font-light leading-relaxed">Estamos ubicados en la zona céntrica de Colcabamba para brindarte soporte técnico y la mejor asesoría en tu próxima compra.</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                  <div className="flex gap-4">
+                    <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0">
+                      <MapPin size={24} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm uppercase tracking-wider">Dirección</h4>
+                      <p className="text-slate-500 text-sm">Colcabamba - Tayacaja, Perú</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center shrink-0">
+                      <Phone size={24} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm uppercase tracking-wider">WhatsApp</h4>
+                      <p className="text-slate-500 text-sm">910457625</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="h-[450px] rounded-[3rem] overflow-hidden shadow-2xl border-8 border-slate-50 grayscale hover:grayscale-0 transition-all duration-700">
+                <iframe 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15622.345!2d-74.6567!3d-12.4456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x910e53!2sColcabamba!5e0!3m2!1sen!2spe!4v1707250000000" 
+                  width="100%" height="100%" style={{border:0}} allowFullScreen loading="lazy"
+                ></iframe>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* FOOTER */}
+      <footer className="bg-black text-white py-20 px-4">
+        <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
+          <div className="flex flex-col items-center leading-none mb-10">
+            <span className="text-[10px] tracking-[0.6em] text-slate-500 font-medium uppercase mb-2">Inversiones</span>
+            <h2 className="text-4xl font-black text-white tracking-tighter">COLKA</h2>
+          </div>
+          <div className="flex gap-8 mb-10 text-slate-400 uppercase text-[10px] font-bold tracking-widest">
+            <a href="#" className="hover:text-white transition-colors">Celulares</a>
+            <a href="#" className="hover:text-white transition-colors">Accesorios</a>
+            <a href="#" className="hover:text-white transition-colors">Garantía</a>
+            <a href="#" className="hover:text-white transition-colors">Nosotros</a>
+          </div>
+          <p className="text-slate-500 text-xs max-w-sm leading-relaxed">Calidad certificada y respaldo técnico permanente en la provincia de Tayacaja.</p>
+          <div className="mt-20 pt-8 border-t border-white/10 w-full text-[9px] text-slate-600 uppercase tracking-[0.3em]">
+            © 2026 Inversiones Colka Pro. Todos los derechos reservados.
+          </div>
+        </div>
+      </footer>
+
+      {/* CARRITO (PANEL LATERAL) */}
+      {isCartOpen && (
+        <div className="fixed inset-0 z-[100] flex justify-end animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
+          <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
+            <div className="p-8 border-b flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-black italic uppercase tracking-tighter">Tu Pedido</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Revisa tus productos seleccionados</p>
+              </div>
+              <button onClick={() => setIsCartOpen(false)} className="p-3 hover:bg-slate-100 rounded-full transition-colors"><X size={24}/></button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar">
+              {cart.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-slate-300">
+                  <ShoppingCart size={64} strokeWidth={1} />
+                  <p className="font-bold uppercase tracking-widest text-[10px] mt-4">Carrito Vacío</p>
+                </div>
+              ) : (
+                cart.map(item => (
+                  <div key={item.id} className="flex gap-5 items-center">
+                    <div className="w-20 h-20 bg-slate-50 rounded-[1.5rem] flex items-center justify-center overflow-hidden border">
+                      {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : <Smartphone className="text-slate-200" />}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-sm leading-tight mb-1">{item.name}</h4>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-2">{item.category}</p>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs bg-slate-100 px-2 py-1 rounded font-bold">{item.qty} un.</span>
+                        <span className="font-black text-black text-sm">S/ {(item.price * item.qty).toFixed(2)}</span>
+                      </div>
+                    </div>
+                    <button onClick={() => removeFromCart(item.id)} className="text-slate-300 hover:text-red-500 transition-colors">
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {cart.length > 0 && (
+              <div className="p-8 bg-slate-50 border-t space-y-6">
+                <div className="flex justify-between items-end">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Total Estimado</span>
+                  <span className="text-3xl font-black text-black leading-none tracking-tighter">S/ {cartTotal.toFixed(2)}</span>
+                </div>
+                <button 
+                  onClick={finalizarPedido}
+                  className="w-full bg-green-600 text-white py-5 rounded-[2rem] font-black text-lg shadow-2xl shadow-green-200 hover:bg-green-700 transition-all flex items-center justify-center gap-3 active:scale-95"
+                >
+                  <Phone size={24} /> FINALIZAR POR WHATSAPP
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL AGREGAR/EDITAR PRODUCTO */}
+      {showProductModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowProductModal(false)} />
+          <form onSubmit={saveProduct} className="relative bg-white w-full max-w-xl rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in-95 duration-300 overflow-y-auto max-h-[90vh]">
+            <div className="mb-8">
+              <h3 className="text-3xl font-black italic uppercase tracking-tighter">
+                {editingProduct ? 'Editar Equipo' : 'Nuevo Ingreso'}
+              </h3>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Completa los datos del producto</p>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Nombre del Producto</label>
+                  <input required value={newProduct.name} onChange={(e)=>setNewProduct({...newProduct, name: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-black outline-none" placeholder="Ej: iPhone 15 Pro Max" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Categoría</label>
+                  <select required value={newProduct.category} onChange={(e)=>setNewProduct({...newProduct, category: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-black outline-none">
+                    <option value="">Seleccionar...</option>
+                    {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Precio (S/)</label>
+                  <input required type="number" step="0.01" value={newProduct.price} onChange={(e)=>setNewProduct({...newProduct, price: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-black outline-none" placeholder="0.00" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">URL Imagen (Link)</label>
+                  <input value={newProduct.image} onChange={(e)=>setNewProduct({...newProduct, image: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-black outline-none" placeholder="https://..." />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Descripción (Texto Justificado)</label>
+                <textarea rows="4" value={newProduct.description} onChange={(e)=>setNewProduct({...newProduct, description: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-black outline-none resize-none" placeholder="Detalles técnicos..." />
+              </div>
+            </div>
+
+            <div className="flex gap-4 mt-10">
+              <button type="button" onClick={() => setShowProductModal(false)} className="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">Cancelar</button>
+              <button type="submit" className="flex-1 bg-black text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200">
+                {editingProduct ? 'Actualizar' : 'Guardar Producto'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
-
-    <footer>
-        <p><strong>INVERSIONES COLKA</strong></p>
-        <p>Colcabamba, Tayacaja, Huancavelica - Perú</p>
-        <p>&copy; 2026 Todos los derechos reservados.</p>
-    </footer>
-
-    <script>
-        let index = 0;
-        setInterval(() => {
-            index = (index + 1) % 2;
-            document.getElementById('slider').style.transform = `translateX(-${index * 100}%)`;
-        }, 4000);
-    </script>
-</body>
-</html>
+  );
+}
