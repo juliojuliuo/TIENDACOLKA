@@ -3,132 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INVERSIONES COLKA | Tienda Pro 2026</title>
+    <title>INVERSIONES COLKA | Premium Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primario: #1b4b8a; --verde: #25d366; --fondo: #f1f5f9; --rojo: #e11d48; --oro: #fbbf24; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--fondo); color: #1e293b; }
-
-        /* CONTADOR DE OFERTA */
-        .oferta-relampago { background: var(--rojo); color: white; padding: 10px; text-align: center; font-weight: bold; font-size: 14px; letter-spacing: 1px; }
-        #timer { color: var(--oro); font-size: 18px; margin-left: 10px; }
-
-        header { background: white; padding: 20px; text-align: center; border-bottom: 3px solid var(--primario); }
-        .logo { font-size: 2.2rem; font-weight: 900; color: var(--primario); margin: 0; letter-spacing: -2px; }
-
-        /* SLIDER */
-        .slider { position: relative; width: 100%; height: 250px; overflow: hidden; background: #000; }
-        .slides { display: flex; width: 100%; height: 100%; transition: 0.6s ease-in-out; }
-        .slide { min-width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; background: linear-gradient(45deg, #1b4b8a, #000); }
-        .slide h2 { font-size: 2rem; margin: 0; }
-
-        /* PRODUCTOS */
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        
-        .card { 
-            background: white; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; 
-            transition: 0.3s; position: relative; display: flex; flex-direction: column;
+        :root {
+            --primario: #1b4b8a;
+            --dorado: #c5a059;
+            --fondo: #ffffff;
+            --gris-claro: #f8f9fa;
+            --texto: #2d3436;
         }
-        .card:hover { transform: translateY(-10px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+
+        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--fondo); color: var(--texto); scroll-behavior: smooth; }
+
+        /* NAV ELEGANTE */
+        nav { background: white; padding: 20px; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .logo { font-size: 24px; font-weight: 900; color: var(--primario); letter-spacing: 2px; text-transform: uppercase; }
+
+        /* SLIDER PROFESIONAL */
+        .slider-container { width: 100%; height: 450px; overflow: hidden; position: relative; }
+        .slides { display: flex; width: 100%; height: 100%; transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .slide { 
+            min-width: 100%; height: 100%; position: relative;
+            display: flex; align-items: center; justify-content: center;
+            background-size: cover; background-position: center;
+        }
+        .slide-content { background: rgba(0,0,0,0.4); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
+        .slide h2 { font-size: 3rem; margin: 0; font-weight: 800; }
+        .slide p { font-size: 1.2rem; margin: 15px 0; }
+
+        /* GRILLA DE PRODUCTOS */
+        .seccion { max-width: 1200px; margin: 60px auto; padding: 0 20px; }
+        .titulo-seccion { text-align: center; margin-bottom: 50px; }
+        .titulo-seccion h2 { font-size: 2rem; color: var(--primario); position: relative; display: inline-block; }
+        .titulo-seccion h2::after { content: ''; width: 50px; height: 3px; background: var(--dorado); position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); }
+
+        .grid-productos { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        .producto-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid #eee; }
+        .producto-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
         
-        .tag-stock { position: absolute; top: 15px; left: 15px; background: rgba(37, 211, 102, 0.1); color: var(--verde); padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; border: 1px solid var(--verde); }
+        .producto-img { width: 100%; height: 250px; object-fit: cover; }
+        .producto-info { padding: 20px; text-align: center; }
+        .producto-info h3 { margin: 0; font-size: 1.1rem; color: #333; }
+        .precio { font-size: 1.5rem; font-weight: 800; color: var(--primario); margin: 10px 0; }
+        .btn-comprar { display: inline-block; background: var(--primario); color: white; text-decoration: none; padding: 10px 25px; border-radius: 5px; font-weight: 600; transition: 0.3s; }
+        .btn-comprar:hover { background: var(--dorado); }
 
-        .img-area { height: 180px; background: #f8fafc; display: flex; align-items: center; justify-content: center; font-size: 50px; color: #cbd5e1; border-bottom: 1px solid #f1f5f9; }
+        /* CONTACTO */
+        .contacto { background: var(--gris-claro); padding: 80px 20px; text-align: center; }
+        .contacto-grid { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; margin-top: 40px; }
+        .contacto-item { flex: 1; min-width: 250px; max-width: 300px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .contacto-item i { font-size: 40px; color: var(--dorado); margin-bottom: 15px; }
 
-        .info { padding: 20px; flex-grow: 1; }
-        .info h3 { margin: 0; font-size: 18px; color: #000; text-align: left; }
-        .precio { font-size: 26px; font-weight: 800; color: var(--primario); margin: 10px 0; display: flex; align-items: center; gap: 10px; }
-        .precio-antes { font-size: 14px; text-decoration: line-through; color: #94a3b8; font-weight: 400; }
+        /* MAPA */
+        .mapa-container { width: 100%; height: 400px; filter: grayscale(0.2); border-top: 5px solid var(--primario); }
 
-        .btn-wa { background: var(--verde); color: white; text-decoration: none; padding: 15px; text-align: center; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 15px; }
-
-        .float-wa { position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; background: var(--verde); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; text-decoration: none; box-shadow: 0 10px 20px rgba(0,0,0,0.2); z-index: 1000; }
-
-        .hidden { display: none !important; }
+        footer { background: var(--primario); color: white; padding: 40px; text-align: center; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <div class="oferta-relampago">
-        🔥 ¡OFERTAS DE LOCURA TERMINAN EN: <span id="timer">00:00:00</span>
-    </div>
+    <nav>
+        <div class="logo">INVERSIONES COLKA</div>
+    </nav>
 
-    <header>
-        <h1 class="logo">INVERSIONES COLKA</h1>
-    </header>
-
-    <div class="slider">
+    <div class="slider-container">
         <div class="slides" id="slider">
-            <div class="slide"><h2>XIAOMI REDMI NOTE 13</h2><p>S/ 750 (Antes S/ 890)</p></div>
-            <div class="slide" style="background: linear-gradient(45deg, #444, #000);"><h2>AUDÍFONOS GAMER</h2><p>Stock Limitado - 50% DCTO</p></div>
-            <div class="slide" style="background: linear-gradient(45deg, #1b4b8a, #25d366);"><h2>CARGADORES 67W</h2><p>Carga tu cel en 30 min</p></div>
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="grid">
-            <div class="card">
-                <span class="tag-stock">STOCK DISPONIBLE</span>
-                <div class="img-area"><i class="fas fa-mobile-alt"></i></div>
-                <div class="info">
-                    <h3>Samsung Galaxy A54 5G</h3>
-                    <div class="precio">S/ 1,190 <span class="precio-antes">S/ 1,350</span></div>
-                    <p style="font-size:13px; color:#64748b; text-align:justify;">Pantalla Super AMOLED y cámara de 50MP. Ideal para redes sociales y fotos nítidas.</p>
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=80&w=1280')">
+                <div class="slide-content">
+                    <h2>IPHONE 15 PRO</h2>
+                    <p>La máxima potencia tecnológica en tus manos.</p>
                 </div>
-                <a href="https://wa.me/51910457625?text=Deseo%20el%20Samsung%20A54" class="btn-wa">
-                    <i class="fab fa-whatsapp"></i> PEDIR POR WHATSAPP
-                </a>
             </div>
-
-            <div class="card">
-                <span class="tag-stock">¡ÚLTIMAS UNIDADES!</span>
-                <div class="img-area"><i class="fas fa-bolt"></i></div>
-                <div class="info">
-                    <h3>Cargador Carga Rápida 33W</h3>
-                    <div class="precio">S/ 39 <span class="precio-antes">S/ 55</span></div>
-                    <p style="font-size:13px; color:#64748b; text-align:justify;">No malogres tu batería. Cargador original con cable reforzado incluido.</p>
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?q=80&w=1280')">
+                <div class="slide-content">
+                    <h2>ACCESORIOS GAMER</h2>
+                    <p>Audífonos y periféricos para ganar todas tus partidas.</p>
                 </div>
-                <a href="https://wa.me/51910457625?text=Deseo%20el%20Cargador%2033W" class="btn-wa">
-                    <i class="fab fa-whatsapp"></i> PEDIR POR WHATSAPP
-                </a>
             </div>
         </div>
     </div>
 
-    <a href="https://wa.me/51910457625" class="float-wa"><i class="fab fa-whatsapp"></i></a>
+    <section class="seccion">
+        <div class="titulo-seccion">
+            <h2>PRODUCTOS DESTACADOS</h2>
+        </div>
+        <div class="grid-productos">
+            <div class="producto-card">
+                <img src="https://images.unsplash.com/photo-1592890288564-76628a30a657?q=80&w=400" alt="Celular" class="producto-img">
+                <div class="producto-info">
+                    <h3>Samsung Galaxy S23 Ultra</h3>
+                    <div class="precio">S/ 3,450.00</div>
+                    <a href="https://wa.me/51910457625" class="btn-comprar">Consultar Stock</a>
+                </div>
+            </div>
+            <div class="producto-card">
+                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=400" alt="Audifonos" class="producto-img">
+                <div class="producto-info">
+                    <h3>Audífonos Sony WH-1000XM5</h3>
+                    <div class="precio">S/ 1,150.00</div>
+                    <a href="https://wa.me/51910457625" class="btn-comprar">Consultar Stock</a>
+                </div>
+            </div>
+            <div class="producto-card">
+                <img src="https://images.unsplash.com/photo-1625517407127-147372271842?q=80&w=400" alt="Cargador" class="producto-img">
+                <div class="producto-info">
+                    <h3>Cargador Carga Rápida 67W</h3>
+                    <div class="precio">S/ 85.00</div>
+                    <a href="https://wa.me/51910457625" class="btn-comprar">Comprar ahora</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="contacto">
+        <div class="titulo-seccion">
+            <h2>CONTÁCTANOS</h2>
+        </div>
+        <div class="contacto-grid">
+            <div class="contacto-item">
+                <i class="fab fa-whatsapp"></i>
+                <h3>WhatsApp</h3>
+                <p>910457625</p>
+                <p>Atención inmediata</p>
+            </div>
+            <div class="contacto-item">
+                <i class="fab fa-facebook"></i>
+                <h3>Facebook</h3>
+                <p>Inversiones Colka</p>
+                <p>Síguenos para ofertas</p>
+            </div>
+            <div class="contacto-item">
+                <i class="fas fa-clock"></i>
+                <h3>Horario</h3>
+                <p>Lun - Sáb</p>
+                <p>9:00 AM - 8:00 PM</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="titulo-seccion" style="margin-top: 60px;">
+        <h2>NUESTRA UBICACIÓN</h2>
+        <p style="margin-top: 15px;">Visítanos en Colcabamba, Tayacaja</p>
+    </section>
+    
+    <div class="mapa-container">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15622.34567890!2d-74.6567!3d-12.4456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x910e536c4b9b9b9b%3A0x4b9b9b9b9b9b9b9b!2sColcabamba%2C%20Peru!5e0!3m2!1sen!2spe!4v1707250000000" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+    </div>
+
+    <footer>
+        <p><strong>INVERSIONES COLKA</strong></p>
+        <p>Colcabamba, Tayacaja, Huancavelica - Perú</p>
+        <p>&copy; 2026 Todos los derechos reservados.</p>
+    </footer>
 
     <script>
-        // Lógica del Slider
-        let pos = 0;
+        let index = 0;
         setInterval(() => {
-            pos = (pos + 1) % 3;
-            document.getElementById('slider').style.transform = `translateX(-${pos * 100}%)`;
-        }, 3000);
-
-        // Lógica del Contador (Cronómetro)
-        function startTimer(duration, display) {
-            var timer = duration, hours, minutes, seconds;
-            setInterval(function () {
-                hours = parseInt(timer / 3600, 10);
-                minutes = parseInt((timer % 3600) / 60, 10);
-                seconds = parseInt(timer % 60, 10);
-
-                hours = hours < 10 ? "0" + hours : hours;
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-
-                display.textContent = hours + ":" + minutes + ":" + seconds;
-
-                if (--timer < 0) { timer = duration; }
-            }, 1000);
-        }
-
-        window.onload = function () {
-            var fiveHours = 60 * 60 * 5,
-            display = document.querySelector('#timer');
-            startTimer(fiveHours, display);
-        };
+            index = (index + 1) % 2;
+            document.getElementById('slider').style.transform = `translateX(-${index * 100}%)`;
+        }, 4000);
     </script>
 </body>
 </html>
