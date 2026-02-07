@@ -1,551 +1,359 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { initializeApp } from 'firebase/app';
-import { 
-  getFirestore, collection, addDoc, updateDoc, deleteDoc, 
-  doc, onSnapshot 
-} from 'firebase/firestore';
-import { 
-  getAuth, signInAnonymously, onAuthStateChanged 
-} from 'firebase/auth';
-import { 
-  ShoppingCart, Search, Plus, Trash2, Edit2, 
-  X, LayoutDashboard, Store, Package, Tag, 
-  MapPin, Phone, Smartphone, Image as ImageIcon 
-} from 'lucide-react';
-
-// --- TUS CREDENCIALES REALES DE FIREBASE ---
-const firebaseConfig = {
-  apiKey: "AIzaSyBcOLkenlK-ATzMgZL0i2kukr2l1gPJZfY",
-  authDomain: "inversiones-colka.firebaseapp.com",
-  projectId: "inversiones-colka",
-  storageBucket: "inversiones-colka.firebasestorage.app",
-  messagingSenderId: "760185289386",
-  appId: "1:760185289386:web:b7f0b49334b04efd40aed3"
-};
-
-// Inicializamos la conexión
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-const appId = 'inversiones-colka-v1';
-
-// Referencias a la base de datos
-const productsCol = collection(db, 'artifacts', appId, 'public', 'data', 'products');
-const categoriesCol = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
-
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [cart, setCart] = useState([]);
-  const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState('Todos');
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  // Estados Formulario Producto
-  const [showProductModal, setShowProductModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [newProduct, setNewProduct] = useState({
-    name: '', price: '', category: '', description: '', image: '', stock: 'Disponible'
-  });
-  
-  // Estado Categoría
-  const [newCatName, setNewCatName] = useState('');
-
-  // 1. AUTENTICACIÓN AUTOMÁTICA
-  useEffect(() => {
-    signInAnonymously(auth).catch(err => console.error("Error Auth:", err));
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      if (u) setUser(u);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // 2. ESCUCHA DE DATOS EN TIEMPO REAL
-  useEffect(() => {
-    // Escuchar Productos
-    const unsubProducts = onSnapshot(productsCol, 
-      (snap) => {
-        const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setProducts(list);
-        setLoading(false);
-      },
-      (err) => {
-        console.error("Error productos:", err);
-        setLoading(false); 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inversiones COLKA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react?deps=react@18.2.0",
+        "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
       }
-    );
-
-    // Escuchar Categorías
-    const unsubCats = onSnapshot(categoriesCol, 
-      (snap) => {
-        const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setCategories(list);
-      },
-      (err) => console.error("Error categorías:", err)
-    );
-
-    return () => {
-      unsubProducts();
-      unsubCats();
-    };
-  }, []);
-
-  // 3. FILTRADO
-  const filteredProducts = useMemo(() => {
-    return products.filter(p => {
-      const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
-      const matchCat = activeCategory === 'Todos' || p.category === activeCategory;
-      return matchSearch && matchCat;
-    });
-  }, [products, search, activeCategory]);
-
-  // 4. CARRITO
-  const addToCart = (product) => {
-    setCart(prev => {
-      const exists = prev.find(item => item.id === product.id);
-      if (exists) {
-        return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
-      }
-      return [...prev, { ...product, qty: 1 }];
-    });
-    setIsCartOpen(true);
-  };
-
-  const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
-  
-  const cartTotal = cart.reduce((acc, item) => acc + (parseFloat(item.price || 0) * item.qty), 0);
-
-  const finalizarPedido = () => {
-    const itemsText = cart.map(item => `- ${item.qty}x ${item.name} (S/ ${item.price})`).join('\n');
-    const totalText = `\n*TOTAL A PAGAR: S/ ${cartTotal.toFixed(2)}*`;
-    const fullMessage = `Hola Inversiones COLKA, deseo realizar el siguiente pedido:\n\n${itemsText}${totalText}\n\nQuedo a la espera de su respuesta.`;
-    window.open(`https://wa.me/51910457625?text=${encodeURIComponent(fullMessage)}`, '_blank');
-  };
-
-  // 5. GUARDAR DATOS (ADMIN)
-  const saveProduct = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingProduct) {
-        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', editingProduct.id), newProduct);
-      } else {
-        await addDoc(productsCol, newProduct);
-      }
-      setShowProductModal(false);
-      setEditingProduct(null);
-      setNewProduct({ name: '', price: '', category: '', description: '', image: '', stock: 'Disponible' });
-    } catch (err) { 
-      console.error("Error guardando:", err);
-      alert("Error: Asegúrate de haber creado la base de datos en MODO DE PRUEBA en Firebase.");
     }
-  };
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-[#fafafa]">
+    <div id="root">Cargando Inversiones Colka...</div>
 
-  const addCategory = async () => {
-    if (!newCatName) return;
-    try {
-      await addDoc(categoriesCol, { name: newCatName });
-      setNewCatName('');
-    } catch (err) { console.error(err); }
-  };
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useMemo } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { initializeApp } from 'firebase/app';
+        import { 
+            getFirestore, collection, addDoc, updateDoc, deleteDoc, 
+            doc, onSnapshot 
+        } from 'firebase/firestore';
+        import { 
+            getAuth, signInAnonymously, onAuthStateChanged 
+        } from 'firebase/auth';
+        import { 
+            ShoppingCart, Search, Plus, Trash2, Edit2, 
+            X, LayoutDashboard, Store, Package, Tag, 
+            MapPin, Phone, Smartphone, Image as ImageIcon 
+        } from 'lucide-react';
 
-  const deleteItem = async (col, id) => {
-    if (window.confirm("¿Estás seguro de eliminar este elemento?")) {
-      try {
-        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', col, id));
-      } catch (err) { console.error(err); }
-    }
-  };
+        // --- TUS CREDENCIALES REALES ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcOLkenlK-ATzMgZL0i2kukr2l1gPJZfY",
+            authDomain: "inversiones-colka.firebaseapp.com",
+            projectId: "inversiones-colka",
+            storageBucket: "inversiones-colka.firebasestorage.app",
+            messagingSenderId: "760185289386",
+            appId: "1:760185289386:web:b7f0b49334b04efd40aed3"
+        };
 
-  if (loading) return (
-    <div className="h-screen flex items-center justify-center bg-white">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-slate-200 border-t-black rounded-full animate-spin"></div>
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Conectando con Inversiones Colka...</p>
-      </div>
-    </div>
-  );
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = 'inversiones-colka-v1';
 
-  return (
-    <div className="min-h-screen bg-[#fafafa] text-slate-900 font-sans">
-      
-      {/* NAVBAR */}
-      <nav className="bg-white border-b border-slate-100 sticky top-0 z-[60] px-4 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex flex-col items-start leading-none">
-            <span className="text-[9px] tracking-[0.5em] text-slate-400 font-medium uppercase mb-1">Inversiones</span>
-            <h1 className="text-3xl font-black text-black tracking-tighter">COLKA</h1>
-          </div>
+        const productsCol = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+        const categoriesCol = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
 
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setIsAdmin(!isAdmin)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all hover:bg-slate-100 border border-slate-200"
-            >
-              {isAdmin ? <Store size={18} /> : <LayoutDashboard size={18} />}
-              <span className="hidden sm:inline">{isAdmin ? 'VER TIENDA' : 'ADMIN'}</span>
-            </button>
+        function App() {
+            const [user, setUser] = useState(null);
+            const [isAdmin, setIsAdmin] = useState(false);
+            const [products, setProducts] = useState([]);
+            const [categories, setCategories] = useState([]);
+            const [cart, setCart] = useState([]);
+            const [search, setSearch] = useState('');
+            const [activeCategory, setActiveCategory] = useState('Todos');
+            const [isCartOpen, setIsCartOpen] = useState(false);
+            const [loading, setLoading] = useState(true);
 
-            {!isAdmin && (
-              <button 
-                onClick={() => setIsCartOpen(true)}
-                className="relative bg-black text-white p-3 rounded-2xl hover:scale-105 transition-transform shadow-xl shadow-black/10"
-              >
-                <ShoppingCart size={20} />
-                {cart.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] w-6 h-6 rounded-full flex items-center justify-center border-2 border-white font-bold">
-                    {cart.length}
-                  </span>
-                )}
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
+            // Estados Formulario
+            const [showProductModal, setShowProductModal] = useState(false);
+            const [editingProduct, setEditingProduct] = useState(null);
+            const [newProduct, setNewProduct] = useState({
+                name: '', price: '', category: '', description: '', image: '', stock: 'Disponible'
+            });
+            const [newCatName, setNewCatName] = useState('');
 
-      {isAdmin ? (
-        /* ================= VISTA ADMINISTRADOR ================= */
-        <div className="max-w-6xl mx-auto p-6 animate-in fade-in duration-500">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
-            <div>
-              <h2 className="text-3xl font-black tracking-tight">Panel de Control</h2>
-              <p className="text-slate-500 text-sm">Gestiona tus productos en la nube.</p>
-            </div>
-            <button 
-              onClick={() => { setEditingProduct(null); setNewProduct({name:'', price:'', category:'', description:'', image:'', stock:'Disponible'}); setShowProductModal(true); }}
-              className="bg-black text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-slate-800 transition-all"
-            >
-              <Plus size={20} /> Nuevo Producto
-            </button>
-          </div>
+            // Auth
+            useEffect(() => {
+                signInAnonymously(auth).catch(err => console.error("Error Auth:", err));
+                const unsubscribe = onAuthStateChanged(auth, (u) => {
+                    if (u) setUser(u);
+                });
+                return () => unsubscribe();
+            }, []);
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Gestión de Categorías */}
-            <aside className="lg:col-span-1 space-y-6">
-              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
-                  <Tag size={14} /> Categorías
-                </h3>
-                <div className="flex gap-2 mb-4">
-                  <input 
-                    value={newCatName}
-                    onChange={(e) => setNewCatName(e.target.value)}
-                    placeholder="Ej: Tablets"
-                    className="flex-1 bg-slate-50 border-none rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
-                  />
-                  <button onClick={addCategory} className="bg-slate-900 text-white p-2 rounded-xl">
-                    <Plus size={18} />
-                  </button>
+            // Datos
+            useEffect(() => {
+                // Productos
+                const unsubProducts = onSnapshot(productsCol, 
+                    (snap) => {
+                        const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        setProducts(list);
+                        setLoading(false);
+                    },
+                    (err) => { console.error(err); setLoading(false); }
+                );
+                // Categorias
+                const unsubCats = onSnapshot(categoriesCol, 
+                    (snap) => {
+                        const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        setCategories(list);
+                    }
+                );
+                return () => { unsubProducts(); unsubCats(); };
+            }, []);
+
+            const filteredProducts = useMemo(() => {
+                return products.filter(p => {
+                    const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
+                    const matchCat = activeCategory === 'Todos' || p.category === activeCategory;
+                    return matchSearch && matchCat;
+                });
+            }, [products, search, activeCategory]);
+
+            const addToCart = (product) => {
+                setCart(prev => {
+                    const exists = prev.find(item => item.id === product.id);
+                    if (exists) return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
+                    return [...prev, { ...product, qty: 1 }];
+                });
+                setIsCartOpen(true);
+            };
+
+            const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
+            const cartTotal = cart.reduce((acc, item) => acc + (parseFloat(item.price || 0) * item.qty), 0);
+
+            const finalizarPedido = () => {
+                const itemsText = cart.map(item => `- ${item.qty}x ${item.name} (S/ ${item.price})`).join('\n');
+                const totalText = `\n*TOTAL A PAGAR: S/ ${cartTotal.toFixed(2)}*`;
+                const fullMessage = `Hola Inversiones COLKA, deseo realizar el siguiente pedido:\n\n${itemsText}${totalText}\n\nQuedo a la espera de su respuesta.`;
+                window.open(`https://wa.me/51910457625?text=${encodeURIComponent(fullMessage)}`, '_blank');
+            };
+
+            const saveProduct = async (e) => {
+                e.preventDefault();
+                try {
+                    if (editingProduct) {
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', editingProduct.id), newProduct);
+                    } else {
+                        await addDoc(productsCol, newProduct);
+                    }
+                    setShowProductModal(false);
+                    setEditingProduct(null);
+                    setNewProduct({ name: '', price: '', category: '', description: '', image: '', stock: 'Disponible' });
+                } catch (err) { alert("Error al guardar. Verifica tu conexión."); }
+            };
+
+            const addCategory = async () => {
+                if (!newCatName) return;
+                await addDoc(categoriesCol, { name: newCatName });
+                setNewCatName('');
+            };
+
+            const deleteItem = async (col, id) => {
+                if (confirm("¿Eliminar este elemento?")) {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', col, id));
+                }
+            };
+
+            if (loading) return (
+                <div className="h-screen flex items-center justify-center bg-white">
+                    <div className="animate-spin w-12 h-12 border-4 border-slate-200 border-t-black rounded-full"></div>
                 </div>
-                <div className="space-y-2">
-                  {categories.map(c => (
-                    <div key={c.id} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl group transition-all hover:bg-slate-100">
-                      <span className="text-sm font-bold">{c.name}</span>
-                      <button onClick={() => deleteItem('categories', c.id)} className="text-slate-300 hover:text-red-500">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  ))}
-                  {categories.length === 0 && <p className="text-xs text-slate-400 italic">Crea una categoría...</p>}
-                </div>
-              </div>
-            </aside>
+            );
 
-            {/* Lista de Productos para Admin */}
-            <div className="lg:col-span-3 space-y-4">
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
-                <Package size={14} /> Inventario en Nube ({products.length})
-              </h3>
-              {products.length === 0 && (
-                <div className="bg-white rounded-3xl p-20 text-center border border-dashed border-slate-200">
-                  <p className="text-slate-400 font-medium">¡Tu base de datos está vacía! Crea tu primer producto.</p>
-                </div>
-              )}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {products.map(p => (
-                  <div key={p.id} className="bg-white p-4 rounded-3xl border border-slate-100 flex items-center gap-4 hover:shadow-md transition-all">
-                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center overflow-hidden border">
-                      {p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <ImageIcon className="text-slate-200" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-slate-900 truncate">{p.name}</h4>
-                      <p className="text-[10px] font-black text-blue-500 uppercase tracking-tighter">{p.category}</p>
-                      <p className="text-sm font-black text-black mt-1">S/ {parseFloat(p.price).toFixed(2)}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => { setEditingProduct(p); setNewProduct(p); setShowProductModal(true); }} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl">
-                        <Edit2 size={18} />
-                      </button>
-                      <button onClick={() => deleteItem('products', p.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl">
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* ================= VISTA CLIENTE ================= */
-        <>
-          {/* Hero Banner */}
-          <section className="relative h-[350px] bg-black flex items-center justify-center overflow-hidden">
-            <img 
-              src="https://images.unsplash.com/photo-1556656793-062ff987b50c?q=80&w=1200" 
-              className="absolute inset-0 w-full h-full object-cover opacity-40 grayscale"
-            />
-            <div className="relative z-10 text-center px-6">
-                <span className="text-blue-400 text-xs font-black tracking-[0.3em] uppercase mb-4 block">Especialistas en Tecnología</span>
-                <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter mb-4 italic uppercase">Nuevos Ingresos</h2>
-                <p className="text-slate-300 max-w-lg mx-auto text-sm md:text-base font-light">Equipos certificados y accesorios de alta gama con garantía real en Colcabamba.</p>
-            </div>
-          </section>
+            return (
+                <div className="min-h-screen bg-[#fafafa] text-slate-900 font-sans pb-20">
+                    {/* NAVBAR */}
+                    <nav className="bg-white border-b border-slate-100 sticky top-0 z-[60] px-4 py-3">
+                        <div className="max-w-7xl mx-auto flex items-center justify-between">
+                            <div className="flex flex-col items-start leading-none">
+                                <span className="text-[9px] tracking-[0.5em] text-slate-400 font-medium uppercase mb-1">Inversiones</span>
+                                <h1 className="text-3xl font-black text-black tracking-tighter">COLKA</h1>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button onClick={() => setIsAdmin(!isAdmin)} className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all hover:bg-slate-100 border border-slate-200">
+                                    {isAdmin ? <Store size={18} /> : <LayoutDashboard size={18} />}
+                                    <span className="hidden sm:inline">{isAdmin ? 'VER TIENDA' : 'ADMIN'}</span>
+                                </button>
+                                {!isAdmin && (
+                                    <button onClick={() => setIsCartOpen(true)} className="relative bg-black text-white p-3 rounded-2xl hover:scale-105 transition-transform shadow-xl shadow-black/10">
+                                        <ShoppingCart size={20} />
+                                        {cart.length > 0 && (
+                                            <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] w-6 h-6 rounded-full flex items-center justify-center border-2 border-white font-bold">{cart.length}</span>
+                                        )}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </nav>
 
-          {/* Buscador y Categorías */}
-          <section className="sticky top-[73px] z-50 bg-[#fafafa]/80 backdrop-blur-md border-b border-slate-100 py-6">
-            <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center gap-6">
-              <div className="relative w-full md:w-1/3">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="¿Qué buscas hoy?..." 
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-full py-3 pl-12 pr-6 text-sm outline-none focus:ring-2 focus:ring-black transition-all shadow-sm"
-                />
-              </div>
-              <div className="flex gap-2 overflow-x-auto w-full no-scrollbar pb-1">
-                <button 
-                  onClick={() => setActiveCategory('Todos')}
-                  className={`px-6 py-2 rounded-full text-xs font-black tracking-tighter uppercase transition-all whitespace-nowrap ${activeCategory === 'Todos' ? 'bg-black text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-400 hover:bg-slate-50'}`}
-                >
-                  Todos
-                </button>
-                {categories.map(c => (
-                  <button 
-                    key={c.id}
-                    onClick={() => setActiveCategory(c.name)}
-                    className={`px-6 py-2 rounded-full text-xs font-black tracking-tighter uppercase transition-all whitespace-nowrap ${activeCategory === c.name ? 'bg-black text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-400 hover:bg-slate-50'}`}
-                  >
-                    {c.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </section>
+                    {isAdmin ? (
+                        /* VISTA ADMIN */
+                        <div className="max-w-6xl mx-auto p-6 animate-in fade-in duration-500">
+                            <div className="flex justify-between items-center mb-10">
+                                <h2 className="text-3xl font-black">Panel Admin</h2>
+                                <button onClick={() => { setEditingProduct(null); setNewProduct({name:'', price:'', category:'', description:'', image:'', stock:'Disponible'}); setShowProductModal(true); }} className="bg-black text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2">
+                                    <Plus size={20} /> Nuevo
+                                </button>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                                <aside className="lg:col-span-1 bg-white p-6 rounded-3xl border border-slate-100 h-fit">
+                                    <h3 className="text-xs font-black uppercase text-slate-400 mb-4">Categorías</h3>
+                                    <div className="flex gap-2 mb-4">
+                                        <input value={newCatName} onChange={(e) => setNewCatName(e.target.value)} placeholder="Ej: Audio" className="flex-1 bg-slate-50 rounded-xl px-3 py-2 text-sm" />
+                                        <button onClick={addCategory} className="bg-black text-white p-2 rounded-xl"><Plus size={18}/></button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {categories.map(c => (
+                                            <div key={c.id} className="flex justify-between p-2 bg-slate-50 rounded-lg text-sm font-bold">
+                                                {c.name}
+                                                <button onClick={() => deleteItem('categories', c.id)} className="text-red-400"><Trash2 size={16}/></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </aside>
 
-          {/* Grilla de Productos */}
-          <main className="max-w-7xl mx-auto px-4 py-16">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
-              {filteredProducts.map(p => (
-                <div key={p.id} className="group flex flex-col bg-white rounded-[2rem] overflow-hidden border border-slate-100 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-                  <div className="aspect-square bg-slate-50 relative overflow-hidden flex items-center justify-center p-6">
-                    {p.image ? (
-                      <img src={p.image} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" alt={p.name} />
+                                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {products.map(p => (
+                                        <div key={p.id} className="bg-white p-4 rounded-3xl border border-slate-100 flex items-center gap-4">
+                                            <div className="w-16 h-16 bg-slate-50 rounded-xl overflow-hidden">
+                                                {p.image ? <img src={p.image} className="w-full h-full object-cover"/> : <ImageIcon className="m-auto mt-4 text-slate-300"/>}
+                                            </div>
+                                            <div className="flex-1">
+                                                <h4 className="font-bold truncate">{p.name}</h4>
+                                                <p className="text-xs text-slate-500 font-bold uppercase">{p.category}</p>
+                                                <p className="font-bold">S/ {p.price}</p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => { setEditingProduct(p); setNewProduct(p); setShowProductModal(true); }} className="p-2 bg-blue-50 text-blue-500 rounded-xl"><Edit2 size={18}/></button>
+                                                <button onClick={() => deleteItem('products', p.id)} className="p-2 bg-red-50 text-red-500 rounded-xl"><Trash2 size={18}/></button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
                     ) : (
-                      <Smartphone size={80} className="text-slate-100" />
+                        /* VISTA CLIENTE */
+                        <>
+                            <section className="relative h-[300px] bg-black flex items-center justify-center overflow-hidden mb-8">
+                                <img src="https://images.unsplash.com/photo-1556656793-062ff987b50c?q=80&w=1200" className="absolute inset-0 w-full h-full object-cover opacity-40 grayscale"/>
+                                <div className="relative z-10 text-center px-4">
+                                    <h2 className="text-5xl font-black text-white italic uppercase tracking-tighter">Nuevos Ingresos</h2>
+                                    <p className="text-slate-300">Lo último en tecnología en Colcabamba</p>
+                                </div>
+                            </section>
+
+                            <div className="max-w-7xl mx-auto px-4 mb-8 flex flex-col md:flex-row gap-4 items-center">
+                                <div className="relative w-full md:w-1/3">
+                                    <Search className="absolute left-4 top-3 text-slate-400" size={18} />
+                                    <input type="text" placeholder="Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full bg-white border rounded-full py-3 pl-12 pr-6 text-sm shadow-sm"/>
+                                </div>
+                                <div className="flex gap-2 overflow-x-auto w-full pb-2">
+                                    <button onClick={() => setActiveCategory('Todos')} className={`px-5 py-2 rounded-full text-xs font-bold uppercase whitespace-nowrap ${activeCategory === 'Todos' ? 'bg-black text-white' : 'bg-white border'}`}>Todos</button>
+                                    {categories.map(c => (
+                                        <button key={c.id} onClick={() => setActiveCategory(c.name)} className={`px-5 py-2 rounded-full text-xs font-bold uppercase whitespace-nowrap ${activeCategory === c.name ? 'bg-black text-white' : 'bg-white border'}`}>{c.name}</button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <main className="max-w-7xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                                {filteredProducts.map(p => (
+                                    <div key={p.id} className="bg-white rounded-[2rem] overflow-hidden border border-slate-100 hover:shadow-xl transition-all flex flex-col group">
+                                        <div className="aspect-square bg-slate-50 relative flex items-center justify-center p-6">
+                                            {p.image ? <img src={p.image} className="w-full h-full object-contain group-hover:scale-110 transition-transform"/> : <Smartphone size={60} className="text-slate-200"/>}
+                                            <span className="absolute top-4 left-4 bg-white/90 px-2 py-1 rounded text-[10px] font-black uppercase">{p.category}</span>
+                                        </div>
+                                        <div className="p-6 flex-1 flex flex-col">
+                                            <h3 className="text-lg font-black leading-tight mb-2">{p.name}</h3>
+                                            <div className="mt-auto flex items-end justify-between">
+                                                <div>
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase">Precio</p>
+                                                    <p className="text-2xl font-black">S/ {p.price}</p>
+                                                </div>
+                                                <button onClick={() => addToCart(p)} className="bg-black text-white p-3 rounded-xl hover:bg-blue-600 transition-colors"><Plus size={20}/></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </main>
+                        </>
                     )}
-                    <span className="absolute top-6 left-6 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter text-blue-600 shadow-sm border border-blue-50">
-                      {p.category}
-                    </span>
-                  </div>
-                  <div className="p-8 flex-1 flex flex-col">
-                    <h3 className="text-xl font-black text-black mb-3 tracking-tight leading-tight group-hover:text-blue-600 transition-colors">{p.name}</h3>
-                    <p className="text-xs text-slate-500 leading-relaxed mb-6 text-justify line-clamp-3">
-                      {p.description || "Producto premium seleccionado por Inversiones COLKA."}
-                    </p>
-                    <div className="mt-auto flex items-end justify-between">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase text-slate-300 tracking-widest mb-1">Precio Online</span>
-                        <span className="text-3xl font-black text-black leading-none tracking-tighter">S/ {parseFloat(p.price).toFixed(2)}</span>
-                      </div>
-                      <button 
-                        onClick={() => addToCart(p)}
-                        className="bg-black text-white p-4 rounded-2xl hover:bg-blue-600 transition-all active:scale-90 shadow-xl shadow-slate-200"
-                      >
-                        <Plus size={24} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
 
-            {filteredProducts.length === 0 && (
-              <div className="text-center py-40">
-                <Search size={60} className="mx-auto text-slate-100 mb-6" />
-                <h3 className="text-2xl font-black text-slate-300 uppercase italic">Sin resultados</h3>
-                <p className="text-slate-400 font-medium">No hay productos disponibles por ahora.</p>
-              </div>
-            )}
-          </main>
+                    {/* MODAL PRODUCTO */}
+                    {showProductModal && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                            <form onSubmit={saveProduct} className="bg-white w-full max-w-lg rounded-3xl p-8 overflow-y-auto max-h-[90vh]">
+                                <h3 className="text-2xl font-black mb-6">{editingProduct ? 'Editar' : 'Nuevo Producto'}</h3>
+                                <div className="space-y-4">
+                                    <input required placeholder="Nombre" value={newProduct.name} onChange={(e)=>setNewProduct({...newProduct, name: e.target.value})} className="w-full bg-slate-50 p-3 rounded-xl font-bold"/>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <select required value={newProduct.category} onChange={(e)=>setNewProduct({...newProduct, category: e.target.value})} className="w-full bg-slate-50 p-3 rounded-xl font-bold">
+                                            <option value="">Categoría...</option>
+                                            {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                                        </select>
+                                        <input required type="number" placeholder="Precio" value={newProduct.price} onChange={(e)=>setNewProduct({...newProduct, price: e.target.value})} className="w-full bg-slate-50 p-3 rounded-xl font-bold"/>
+                                    </div>
+                                    <input placeholder="URL Imagen" value={newProduct.image} onChange={(e)=>setNewProduct({...newProduct, image: e.target.value})} className="w-full bg-slate-50 p-3 rounded-xl font-bold"/>
+                                    <textarea rows="3" placeholder="Descripción" value={newProduct.description} onChange={(e)=>setNewProduct({...newProduct, description: e.target.value})} className="w-full bg-slate-50 p-3 rounded-xl font-bold"></textarea>
+                                </div>
+                                <div className="flex gap-3 mt-8">
+                                    <button type="button" onClick={() => setShowProductModal(false)} className="flex-1 bg-slate-100 py-3 rounded-xl font-bold">Cancelar</button>
+                                    <button type="submit" className="flex-1 bg-black text-white py-3 rounded-xl font-bold">Guardar</button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
 
-          {/* INFO & MAPA */}
-          <section className="bg-white py-24 border-t border-slate-100">
-            <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-              <div className="space-y-12">
-                <div>
-                  <h2 className="text-4xl font-black tracking-tighter italic uppercase mb-6">Visítanos en Tienda</h2>
-                  <p className="text-slate-500 text-lg font-light leading-relaxed">Estamos ubicados en la zona céntrica de Colcabamba para brindarte soporte técnico y la mejor asesoría en tu próxima compra.</p>
+                    {/* CARRITO */}
+                    {isCartOpen && (
+                        <div className="fixed inset-0 z-[100] flex justify-end">
+                            <div className="absolute inset-0 bg-black/40" onClick={() => setIsCartOpen(false)}></div>
+                            <div className="relative w-full max-w-md bg-white h-full shadow-2xl p-6 flex flex-col">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-2xl font-black">Tu Pedido</h3>
+                                    <button onClick={() => setIsCartOpen(false)}><X/></button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-4">
+                                    {cart.map(item => (
+                                        <div key={item.id} className="flex gap-4 items-center border-b pb-4">
+                                            <div className="w-16 h-16 bg-slate-50 rounded-lg overflow-hidden">
+                                                {item.image && <img src={item.image} className="w-full h-full object-cover"/>}
+                                            </div>
+                                            <div className="flex-1">
+                                                <h4 className="font-bold text-sm">{item.name}</h4>
+                                                <div className="flex justify-between mt-1">
+                                                    <span className="text-xs bg-slate-100 px-2 rounded">{item.qty} un.</span>
+                                                    <span className="font-bold">S/ {item.price * item.qty}</span>
+                                                </div>
+                                            </div>
+                                            <button onClick={() => removeFromCart(item.id)} className="text-red-400"><Trash2 size={18}/></button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-4 pt-4 border-t">
+                                    <div className="flex justify-between mb-4">
+                                        <span className="font-bold uppercase text-slate-400">Total</span>
+                                        <span className="text-3xl font-black">S/ {cartTotal.toFixed(2)}</span>
+                                    </div>
+                                    <button onClick={finalizarPedido} className="w-full bg-green-600 text-white py-4 rounded-xl font-black flex justify-center gap-2">
+                                        <Phone/> PEDIR POR WHATSAPP
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0">
-                      <MapPin size={24} />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-sm uppercase tracking-wider">Dirección</h4>
-                      <p className="text-slate-500 text-sm">Colcabamba - Tayacaja, Perú</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center shrink-0">
-                      <Phone size={24} />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-sm uppercase tracking-wider">WhatsApp</h4>
-                      <p className="text-slate-500 text-sm">910457625</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="h-[450px] rounded-[3rem] overflow-hidden shadow-2xl border-8 border-slate-50 grayscale hover:grayscale-0 transition-all duration-700">
-                <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31119.53606974676!2d-74.7042766!3d-12.6391983!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x910de5a093755555%3A0x4037568555555555!2sColcabamba%2C%20Tayacaja!5e0!3m2!1ses!2spe!4v1700000000000!5m2!1ses!2spe" 
-                  width="100%" height="100%" style={{border:0}} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"
-                ></iframe>
-              </div>
-            </div>
-          </section>
-        </>
-      )}
+            );
+        }
 
-      {/* FOOTER */}
-      <footer className="bg-black text-white py-20 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
-          <div className="flex flex-col items-center leading-none mb-10">
-            <span className="text-[10px] tracking-[0.6em] text-slate-500 font-medium uppercase mb-2">Inversiones</span>
-            <h2 className="text-4xl font-black text-white tracking-tighter">COLKA</h2>
-          </div>
-          <div className="mt-20 pt-8 border-t border-white/10 w-full text-[9px] text-slate-600 uppercase tracking-[0.3em]">
-            © 2026 Inversiones Colka Pro. Todos los derechos reservados.
-          </div>
-        </div>
-      </footer>
-
-      {/* CARRITO (PANEL LATERAL) */}
-      {isCartOpen && (
-        <div className="fixed inset-0 z-[100] flex justify-end animate-in fade-in duration-300">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
-          <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
-            <div className="p-8 border-b flex items-center justify-between">
-              <div>
-                <h3 className="text-2xl font-black italic uppercase tracking-tighter">Tu Pedido</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Revisa tus productos</p>
-              </div>
-              <button onClick={() => setIsCartOpen(false)} className="p-3 hover:bg-slate-100 rounded-full transition-colors"><X size={24}/></button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar">
-              {cart.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-slate-300">
-                  <ShoppingCart size={64} strokeWidth={1} />
-                  <p className="font-bold uppercase tracking-widest text-[10px] mt-4">Carrito Vacío</p>
-                </div>
-              ) : (
-                cart.map(item => (
-                  <div key={item.id} className="flex gap-5 items-center">
-                    <div className="w-20 h-20 bg-slate-50 rounded-[1.5rem] flex items-center justify-center overflow-hidden border">
-                      {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : <Smartphone className="text-slate-200" />}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-sm leading-tight mb-1">{item.name}</h4>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs bg-slate-100 px-2 py-1 rounded font-bold">{item.qty} un.</span>
-                        <span className="font-black text-black text-sm">S/ {(item.price * item.qty).toFixed(2)}</span>
-                      </div>
-                    </div>
-                    <button onClick={() => removeFromCart(item.id)} className="text-slate-300 hover:text-red-500 transition-colors">
-                      <Trash2 size={20} />
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {cart.length > 0 && (
-              <div className="p-8 bg-slate-50 border-t space-y-6">
-                <div className="flex justify-between items-end">
-                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Total Estimado</span>
-                  <span className="text-3xl font-black text-black leading-none tracking-tighter">S/ {cartTotal.toFixed(2)}</span>
-                </div>
-                <button 
-                  onClick={finalizarPedido}
-                  className="w-full bg-green-600 text-white py-5 rounded-[2rem] font-black text-lg shadow-2xl shadow-green-200 hover:bg-green-700 transition-all flex items-center justify-center gap-3 active:scale-95"
-                >
-                  <Phone size={24} /> PEDIR POR WHATSAPP
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* MODAL AGREGAR/EDITAR PRODUCTO */}
-      {showProductModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowProductModal(false)} />
-          <form onSubmit={saveProduct} className="relative bg-white w-full max-w-xl rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in-95 duration-300 overflow-y-auto max-h-[90vh]">
-            <div className="mb-8">
-              <h3 className="text-3xl font-black italic uppercase tracking-tighter">
-                {editingProduct ? 'Editar Equipo' : 'Nuevo Ingreso'}
-              </h3>
-            </div>
-            
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Nombre</label>
-                  <input required value={newProduct.name} onChange={(e)=>setNewProduct({...newProduct, name: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-black outline-none" placeholder="Ej: iPhone 15" />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Categoría</label>
-                  <select required value={newProduct.category} onChange={(e)=>setNewProduct({...newProduct, category: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-black outline-none">
-                    <option value="">Seleccionar...</option>
-                    {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Precio (S/)</label>
-                  <input required type="number" step="0.01" value={newProduct.price} onChange={(e)=>setNewProduct({...newProduct, price: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-black outline-none" placeholder="0.00" />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">URL Imagen</label>
-                  <input value={newProduct.image} onChange={(e)=>setNewProduct({...newProduct, image: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-black outline-none" placeholder="https://..." />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Descripción</label>
-                <textarea rows="4" value={newProduct.description} onChange={(e)=>setNewProduct({...newProduct, description: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-black outline-none resize-none" placeholder="Detalles técnicos..." />
-              </div>
-            </div>
-
-            <div className="flex gap-4 mt-10">
-              <button type="button" onClick={() => setShowProductModal(false)} className="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">Cancelar</button>
-              <button type="submit" className="flex-1 bg-black text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200">
-                {editingProduct ? 'Actualizar' : 'Guardar'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-    </div>
-  );
-}
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
