@@ -20,13 +20,23 @@
     </script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        body { 
+            background-color: #ffffff; 
+            font-family: 'Inter', sans-serif;
+            /* TU GAVILÁN COMO FONDO FIJO ELEGANTE */
+            background-image: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)), 
+                              url('https://i.postimg.cc/jjP5tMDG/Gemini-Generated-Image-6rxotv6rxotv6rxo-removebg-preview.png');
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 55%;
+        }
+        .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
         .hide-scroll::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
-    <div id="root">Cargando Tienda COLKA...</div>
+    <div id="root">Cargando Inversiones COLKA...</div>
 
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useMemo } from 'react';
@@ -52,6 +62,7 @@
         const productsCol = collection(db, 'artifacts', appId, 'public', 'data', 'products');
         const categoriesCol = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
         const WHATSAPP_NUMBER = "51983200830";
+        const LOGO_URL = "https://i.postimg.cc/25zJS66t/logo.png";
 
         function App() {
             const [isAdmin, setIsAdmin] = useState(false);
@@ -85,22 +96,19 @@
             const finalizarPedido = () => {
                 const total = cart.reduce((acc, i) => acc + (parseFloat(i.price) * i.qty), 0);
                 const txt = cart.map(i => `- ${i.qty}x ${i.name}`).join('\n');
-                const msg = `Hola Julio, deseo realizar el siguiente pedido:\n\n${txt}\n\n*Total Estimado: S/ ${total.toFixed(2)}*`;
+                const msg = `Hola Julio, quiero este pedido de COLKA:\n\n${txt}\n\n*Total: S/ ${total.toFixed(2)}*`;
                 window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
             };
 
             return (
                 <div className="min-h-screen">
-                    {/* NAV */}
+                    {/* NAV CON LOGO */}
                     <nav className="fixed w-full z-50 top-0 glass-nav h-20 flex items-center px-6">
                         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
-                            <div className="flex flex-col leading-none cursor-pointer" onClick={() => window.scrollTo(0,0)}>
-                                <span className="text-[10px] uppercase tracking-[0.4em] text-slate-400 font-bold">Inversiones</span>
-                                <h1 className="text-3xl font-black text-black tracking-tighter">COLKA</h1>
-                            </div>
+                            <img src={LOGO_URL} alt="COLKA" className="h-14 cursor-pointer" onClick={() => window.scrollTo(0,0)} />
                             <div className="flex items-center gap-6">
                                 <button onClick={() => isAdmin ? setIsAdmin(false) : setShowLogin(true)} className="text-slate-500 font-bold text-xs flex items-center gap-1 hover:text-black transition-colors">
-                                    <Lock size={16}/> {isAdmin ? 'SALIR ADMIN' : 'ADMIN'}
+                                    <Lock size={16}/> {isAdmin ? 'SALIR' : 'ADMIN'}
                                 </button>
                                 <button onClick={() => setIsCartOpen(true)} className="relative bg-black text-white p-3 rounded-2xl shadow-lg active:scale-95 transition-transform">
                                     <ShoppingCart size={24} />
@@ -113,23 +121,26 @@
                     <div className="pt-20">
                         {isAdmin ? (
                             /* --- VISTA ADMIN --- */
-                            <div className="max-w-7xl mx-auto px-4 py-12 animate-in fade-in duration-500">
+                            <div className="max-w-7xl mx-auto px-4 py-12">
                                 <div className="bg-slate-900 text-white rounded-[2.5rem] p-10 mb-8 flex flex-col md:flex-row justify-between items-center shadow-2xl">
-                                    <div><h2 className="text-3xl font-black mb-1 font-serif tracking-tight">Hola Julio</h2><p className="text-slate-400">Modo Administrador Activo.</p></div>
+                                    <div className="mb-4 md:mb-0">
+                                        <h2 className="text-3xl font-black mb-1">Panel Administrativo</h2>
+                                        <p className="text-slate-400">Bienvenido, Julio Cesar Valladolid.</p>
+                                    </div>
                                     <button onClick={() => { setEditingProduct(null); setNewProduct({name:'', price:'', category:'', description:'', image:'', stock:'Disponible'}); setShowProductModal(true); }} className="bg-white text-black px-8 py-4 rounded-xl font-bold hover:bg-slate-100 transition-all">+ NUEVO PRODUCTO</button>
                                 </div>
                                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                                     <div className="bg-white p-6 rounded-[2.5rem] border h-fit shadow-sm">
                                         <h3 className="font-bold text-slate-400 uppercase text-xs mb-4">Categorías</h3>
                                         <div className="flex gap-2 mb-4">
-                                            <input value={newCatName} onChange={e=>setNewCatName(e.target.value)} placeholder="Ej: Tablets" className="w-full bg-slate-50 rounded-lg px-3 py-2 text-sm outline-none border focus:border-black"/>
-                                            <button onClick={async()=>{if(newCatName){await addDoc(categoriesCol, {name:newCatName});setNewCatName('')}}} className="bg-black text-white p-2 rounded-lg hover:scale-110 transition-transform"><Plus size={16}/></button>
+                                            <input value={newCatName} onChange={e=>setNewCatName(e.target.value)} placeholder="Nueva..." className="w-full bg-slate-50 rounded-lg px-3 py-2 text-sm outline-none border"/>
+                                            <button onClick={async()=>{if(newCatName){await addDoc(categoriesCol, {name:newCatName});setNewCatName('')}}} className="bg-black text-white p-2 rounded-lg"><Plus size={16}/></button>
                                         </div>
                                         <div className="space-y-1">
                                             {categories.map(c => (
                                                 <div key={c.id} className="flex justify-between items-center p-2 hover:bg-slate-50 rounded-lg">
                                                     <span className="text-sm font-bold">{c.name}</span>
-                                                    <button onClick={async()=>await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', c.id))} className="text-red-400 hover:text-red-600"><Trash2 size={14}/></button>
+                                                    <button onClick={async()=>await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', c.id))} className="text-red-400"><Trash2 size={14}/></button>
                                                 </div>
                                             ))}
                                         </div>
@@ -137,7 +148,7 @@
                                     <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {products.map(p => (
                                             <div key={p.id} className="bg-white p-4 rounded-3xl border flex gap-4 shadow-sm items-center hover:shadow-md transition-shadow">
-                                                <img src={p.image || 'https://i.ibb.co/q1xSgXq/image-11.png'} className="w-16 h-16 rounded-xl object-cover border"/>
+                                                <img src={p.image || LOGO_URL} className="w-16 h-16 rounded-xl object-cover border"/>
                                                 <div className="flex-1">
                                                     <h4 className="font-bold text-slate-900">{p.name}</h4>
                                                     <p className="font-black text-blue-600">S/ {p.price}</p>
@@ -155,18 +166,19 @@
                             /* --- VISTA CLIENTE --- */
                             <>
                                 {/* BANNER */}
-                                <div className="bg-black text-white h-[400px] flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
-                                    <img src="https://images.unsplash.com/photo-1556656793-062ff987b50c?q=80&w=1200" className="absolute inset-0 w-full h-full object-cover opacity-40 grayscale" />
+                                <div className="bg-black text-white h-[450px] flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1556656793-062ff987b50c?q=80&w=1200" className="absolute inset-0 w-full h-full object-cover opacity-30 grayscale" />
                                     <div className="relative z-10 animate-in slide-in-from-bottom duration-1000">
+                                        <img src={LOGO_URL} className="h-32 mx-auto mb-6 drop-shadow-2xl" />
                                         <h2 className="text-5xl md:text-8xl font-black tracking-tighter italic mb-4 uppercase">Tecnología Real</h2>
-                                        <p className="text-slate-400 text-lg md:text-2xl font-light">Garantía certificada en Colcabamba por Julio Valladolid.</p>
+                                        <p className="text-slate-300 text-lg md:text-2xl font-light">Garantía certificada por Julio Valladolid.</p>
                                     </div>
                                 </div>
 
                                 <div className="max-w-7xl mx-auto px-4 -mt-10 relative z-20">
                                     <div className="max-w-xl mx-auto relative mb-12 shadow-2xl">
                                         <Search className="absolute left-5 top-4 text-slate-400" size={24}/>
-                                        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Busca tu próximo equipo..." className="w-full bg-white border-none rounded-full py-4 pl-14 pr-6 text-lg outline-none focus:ring-4 focus:ring-blue-100 transition-all" />
+                                        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Busca tu iPhone o accesorio..." className="w-full bg-white border-none rounded-full py-4 pl-14 pr-6 text-lg outline-none focus:ring-4 focus:ring-blue-100 transition-all" />
                                     </div>
 
                                     <div className="flex justify-center flex-wrap gap-2 mb-16">
@@ -178,11 +190,11 @@
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-24">
                                         {filteredProducts.map(p => (
-                                            <div key={p.id} className="group bg-white rounded-[3rem] p-5 border border-slate-100 hover:shadow-2xl transition-all duration-500 flex flex-col">
+                                            <div key={p.id} className="group bg-white/80 backdrop-blur-sm rounded-[3rem] p-5 border border-slate-100 hover:shadow-2xl transition-all duration-500 flex flex-col">
                                                 <div className="bg-slate-50 rounded-[2.5rem] aspect-square w-full mb-6 flex items-center justify-center p-6 overflow-hidden">
-                                                    <img src={p.image || 'https://i.ibb.co/q1xSgXq/image-11.png'} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700"/>
+                                                    <img src={p.image || LOGO_URL} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700"/>
                                                 </div>
-                                                <div className="px-2 pb-2">
+                                                <div className="px-2 pb-2 flex-1 flex flex-col">
                                                     <h3 className="font-black text-xl mb-1 text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">{p.name}</h3>
                                                     <p className="text-xs text-slate-500 line-clamp-2 mb-6 h-8 font-medium">{p.description || "Producto garantizado por Inversiones COLKA."}</p>
                                                     <div className="flex items-center justify-between mt-auto">
@@ -202,7 +214,7 @@
                                             {icon: <Truck size={32} className="text-green-600"/>, t: "Envíos", d: "A todo Tayacaja"},
                                             {icon: <Star size={32} className="text-orange-500"/>, t: "Confianza", d: "Prestigio local"},
                                         ].map((item, i) => (
-                                            <div key={i} className="bg-white p-8 rounded-[2.5rem] text-center shadow-sm border border-slate-50">
+                                            <div key={i} className="bg-white/90 backdrop-blur p-8 rounded-[2.5rem] text-center shadow-sm border border-slate-50">
                                                 <div className="flex justify-center mb-4">{item.icon}</div>
                                                 <h4 className="font-black text-slate-900 mb-1">{item.t}</h4>
                                                 <p className="text-[11px] text-slate-400 font-black uppercase tracking-widest">{item.d}</p>
@@ -215,8 +227,8 @@
                                         <h2 className="text-4xl md:text-5xl font-black mb-16 tracking-tight">Voces de nuestros clientes</h2>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                                             {[
-                                                {n: "Carlos Mendívil", t: "El mejor precio en iPhones. Garantía al 100% de Julio.", s: 5},
-                                                {n: "Roxana Torres", t: "Súper confiables, mi laptop llegó perfecta a Colcabamba.", s: 5},
+                                                {n: "Carlos Mendívil", t: "El mejor precio en iPhones de Colcabamba. Garantía al 100%.", s: 5},
+                                                {n: "Roxana Torres", t: "Súper confiables, mi laptop llegó perfecta.", s: 5},
                                                 {n: "Luis Chavez", t: "Honestidad ante todo. Repararon mi equipo en el acto.", s: 5}
                                             ].map((r, i) => (
                                                 <div key={i} className="bg-white/5 p-8 rounded-3xl border border-white/10 text-left">
@@ -239,20 +251,20 @@
                                                 </div>
                                                 <div className="flex gap-5 items-start">
                                                     <div className="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"><Phone size={28}/></div>
-                                                    <div><h4 className="font-black text-slate-900 text-lg mb-1">WhatsApp Julio</h4><p className="text-slate-500 font-medium text-lg">983 200 830</p></div>
+                                                    <div><h4 className="font-black text-slate-900 text-lg mb-1">WhatsApp Julio</h4><p className="text-slate-500 font-medium text-lg">{WHATSAPP_NUMBER}</p></div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="h-[450px] bg-slate-200 rounded-[3.5rem] overflow-hidden shadow-2xl border-4 border-white transform rotate-1 hover:rotate-0 transition-all duration-700">
+                                        <div className="h-[450px] bg-slate-200 rounded-[3.5rem] overflow-hidden shadow-2xl border-4 border-white">
                                             <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.666606869403!2d-74.67385668518716!3d-12.06649799145452!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x910e9646b0d3c0c9%3A0x6e2a2c070868725!2sColcabamba!5e0!3m2!1ses!2spe!4v1620000000000!5m2!1ses!2spe" width="100%" height="100%" style={{border:0}} allowFullScreen loading="lazy"></iframe>
                                         </div>
                                     </div>
                                 </div>
 
-                                <footer className="bg-white border-t py-12 text-center">
+                                <footer className="bg-white/90 backdrop-blur border-t py-12 text-center">
                                     <div className="max-w-7xl mx-auto px-4">
-                                        <h2 className="text-2xl font-black mb-2 tracking-tighter uppercase">Inversiones COLKA</h2>
-                                        <p className="text-slate-400 text-xs mb-8 font-black tracking-widest uppercase">© 2026 - Julio Cesar Valladolid Acevedo</p>
+                                        <img src={LOGO_URL} className="h-12 mx-auto mb-4 opacity-70" />
+                                        <p className="text-slate-400 text-xs mb-10 tracking-widest uppercase font-black">© 2026 - Julio Cesar Valladolid Acevedo</p>
                                         <div className="flex justify-center gap-6">
                                             <Facebook className="text-slate-300 hover:text-blue-600 cursor-pointer" size={24}/>
                                             <Instagram className="text-slate-300 hover:text-pink-600 cursor-pointer" size={24}/>
@@ -263,42 +275,37 @@
                         )}
                     </div>
 
-                    {/* --- MODALES --- */}
-
-                    {/* LOGIN */}
+                    {/* MODALES */}
                     {showLogin && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
                             <form onSubmit={e=>{e.preventDefault(); if(passwordInput==='hola123'){setIsAdmin(true);setShowLogin(false);setPasswordInput('')}else{alert("Clave incorrecta")}} } className="bg-white rounded-[3rem] p-12 w-full max-w-sm text-center shadow-2xl">
                                 <Lock className="mx-auto mb-6 text-slate-900" size={48}/>
                                 <h3 className="text-2xl font-black mb-2 tracking-tight">Panel Admin</h3>
-                                <p className="text-xs text-slate-400 font-bold mb-8 uppercase tracking-widest">Solo acceso autorizado</p>
                                 <input type="password" autoFocus value={passwordInput} onChange={e=>setPasswordInput(e.target.value)} placeholder="Contraseña" className="w-full bg-slate-50 border rounded-2xl p-4 mb-6 text-center font-bold outline-none focus:ring-4 focus:ring-blue-100 transition-all text-xl"/>
-                                <button type="submit" className="w-full bg-black text-white py-5 rounded-2xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all">ENTRAR</button>
-                                <button type="button" onClick={()=>setShowLogin(false)} className="mt-6 text-[10px] text-slate-400 font-black uppercase tracking-widest hover:text-slate-900">Cancelar</button>
+                                <button type="submit" className="w-full bg-black text-white py-5 rounded-2xl font-black shadow-xl">ENTRAR</button>
                             </form>
                         </div>
                     )}
 
-                    {/* PRODUCTO */}
                     {showProductModal && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                             <form onSubmit={async e=>{e.preventDefault(); if(editingProduct) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', editingProduct.id), newProduct); else await addDoc(productsCol, newProduct); setShowProductModal(false);}} className="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl overflow-y-auto max-h-[90vh]">
-                                <h3 className="text-3xl font-black mb-8 tracking-tight italic">Nuevo Producto</h3>
+                                <h3 className="text-3xl font-black mb-8 tracking-tight">Nuevo Producto</h3>
                                 <div className="space-y-6">
                                     <input required value={newProduct.name} onChange={e=>setNewProduct({...newProduct, name:e.target.value})} placeholder="Nombre" className="w-full bg-slate-50 border-none p-5 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-black"/>
                                     <div className="flex gap-4">
-                                        <select required value={newProduct.category} onChange={e=>setNewProduct({...newProduct, category:e.target.value})} className="w-1/2 bg-slate-50 border-none p-5 rounded-2xl font-bold outline-none cursor-pointer">
+                                        <select required value={newProduct.category} onChange={e=>setNewProduct({...newProduct, category:e.target.value})} className="w-1/2 bg-slate-50 border-none p-5 rounded-2xl font-bold outline-none">
                                             <option value="">Categoría...</option>
                                             {categories.map(c=><option key={c.id} value={c.name}>{c.name}</option>)}
                                         </select>
                                         <input required type="number" step="0.01" value={newProduct.price} onChange={e=>setNewProduct({...newProduct, price:e.target.value})} placeholder="S/ Precio" className="w-1/2 bg-slate-50 border-none p-5 rounded-2xl font-bold outline-none"/>
                                     </div>
-                                    <input value={newProduct.image} onChange={e=>setNewProduct({...newProduct, image:e.target.value})} placeholder="Link de Imagen" className="w-full bg-slate-50 border-none p-5 rounded-2xl font-bold outline-none"/>
+                                    <input value={newProduct.image} onChange={e=>setNewProduct({...newProduct, image:e.target.value})} placeholder="URL Imagen" className="w-full bg-slate-50 border-none p-5 rounded-2xl font-bold outline-none"/>
                                     <textarea value={newProduct.description} onChange={e=>setNewProduct({...newProduct, description:e.target.value})} placeholder="Detalles..." className="w-full bg-slate-50 border-none p-5 rounded-2xl font-bold outline-none h-28 resize-none"></textarea>
                                 </div>
                                 <div className="flex gap-4 mt-10">
-                                    <button type="button" onClick={()=>setShowProductModal(false)} className="flex-1 font-black text-slate-400 uppercase tracking-widest text-[10px]">Cerrar</button>
-                                    <button type="submit" className="flex-1 bg-black text-white py-5 rounded-2xl font-black shadow-xl hover:scale-105 transition-all">GUARDAR</button>
+                                    <button type="button" onClick={()=>setShowProductModal(false)} className="flex-1 font-black text-slate-400">Cerrar</button>
+                                    <button type="submit" className="flex-1 bg-black text-white py-5 rounded-2xl font-black shadow-xl transition-all">GUARDAR</button>
                                 </div>
                             </form>
                         </div>
@@ -313,27 +320,27 @@
                                     <h3 className="text-4xl font-black italic tracking-tighter">Tu Pedido</h3>
                                     <button onClick={()=>setIsCartOpen(false)} className="bg-slate-100 p-3 rounded-full hover:bg-slate-200 transition-colors"><X size={28}/></button>
                                 </div>
-                                <div className="flex-1 overflow-y-auto space-y-6 pr-2 hide-scroll">
-                                    {cart.length === 0 && <p className="text-center py-20 text-slate-300 font-black italic uppercase tracking-widest opacity-40">Sin Productos</p>}
+                                <div className="flex-1 overflow-y-auto space-y-6 hide-scroll">
+                                    {cart.length === 0 && <p className="text-center py-20 text-slate-300 font-black italic uppercase opacity-40 tracking-widest">Sin Productos</p>}
                                     {cart.map((i, idx) => (
                                         <div key={idx} className="flex gap-5 items-center bg-slate-50 p-5 rounded-[2rem] border shadow-sm">
-                                            <img src={i.image || 'https://i.ibb.co/q1xSgXq/image-11.png'} className="w-20 h-20 rounded-2xl object-cover border p-1 bg-white"/>
+                                            <img src={i.image || LOGO_URL} className="w-20 h-20 rounded-2xl object-cover border p-1 bg-white"/>
                                             <div className="flex-1 min-w-0">
                                                 <h4 className="font-black text-slate-900 text-sm truncate">{i.name}</h4>
                                                 <span className="font-black text-blue-600 text-xl tracking-tighter">S/ {parseFloat(i.price).toFixed(2)}</span>
                                             </div>
-                                            <button onClick={()=>setCart(v=>v.filter((_,index)=>index!==idx))} className="text-slate-300 hover:text-red-500 transition-colors"><Trash2 size={24}/></button>
+                                            <button onClick={()=>setCart(v=>v.filter((_,index)=>index!==idx))} className="text-slate-300 hover:text-red-500"><Trash2 size={24}/></button>
                                         </div>
                                     ))}
                                 </div>
                                 {cart.length > 0 && (
                                     <div className="pt-8 mt-8 border-t">
                                         <div className="flex justify-between items-end mb-8">
-                                            <span className="font-black text-slate-400 uppercase text-xs tracking-widest">Total Estimado</span>
-                                            <span className="text-5xl font-black tracking-tighter text-slate-900 leading-none">S/ {cart.reduce((acc, i) => acc + (parseFloat(i.price) * i.qty), 0).toFixed(2)}</span>
+                                            <span className="font-black text-slate-400 uppercase text-xs">Total</span>
+                                            <span className="text-5xl font-black tracking-tighter text-slate-900">S/ {cart.reduce((acc, i) => acc + (parseFloat(i.price) * i.qty), 0).toFixed(2)}</span>
                                         </div>
                                         <button onClick={finalizarPedido} className="w-full bg-green-500 text-white py-6 rounded-[2.5rem] font-black text-xl shadow-2xl shadow-green-100 active:scale-95 transition-all flex justify-center items-center gap-3">
-                                            <Smartphone fill="white" size={28} /> ENVIAR PEDIDO
+                                            PEDIR POR WHATSAPP
                                         </button>
                                     </div>
                                 )}
