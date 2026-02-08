@@ -22,12 +22,12 @@
     <style>
         body { 
             font-family: 'Inter', sans-serif;
-            background-image: linear-gradient(rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96)), 
+            background-image: linear-gradient(rgba(255, 255, 255, 0.97), rgba(255, 255, 255, 0.97)), 
                               url('https://i.postimg.cc/jjP5tMDG/Gemini-Generated-Image-6rxotv6rxotv6rxo-removebg-preview.png');
             background-attachment: fixed;
             background-position: center;
             background-repeat: no-repeat;
-            background-size: 50%;
+            background-size: 60%;
         }
         .hide-scroll::-webkit-scrollbar { display: none; }
     </style>
@@ -41,7 +41,7 @@
         import { initializeApp } from 'firebase/app';
         import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
         import { getAuth, signInAnonymously } from 'firebase/auth';
-        import { ShoppingCart, Search, Plus, Trash2, Edit2, X, Lock, Phone, Save } from 'lucide-react';
+        import { ShoppingCart, Search, Plus, Trash2, Edit2, X, Lock, Phone, Save, Smartphone } from 'lucide-react';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBcOLkenlK-ATzMgZL0i2kukr2l1gPJZfY",
@@ -69,7 +69,6 @@
             const [search, setSearch] = useState('');
             const [activeCat, setActiveCat] = useState('Todos');
             
-            // Modal Admin
             const [modalOpen, setModalOpen] = useState(false);
             const [editId, setEditId] = useState(null);
             const [form, setForm] = useState({ name: '', price: '', category: 'Celulares', image: '', stock: 'Disponible' });
@@ -78,9 +77,10 @@
 
             useEffect(() => {
                 signInAnonymously(auth);
-                return onSnapshot(productsCol, (snapshot) => {
+                const unsub = onSnapshot(productsCol, (snapshot) => {
                     setProducts(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
                 });
+                return () => unsub();
             }, []);
 
             const addToCart = (p) => {
@@ -95,15 +95,21 @@
 
             const saveProduct = async (e) => {
                 e.preventDefault();
-                const data = { ...form, price: Number(form.price) };
-                if (editId) {
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', editId), data);
-                } else {
-                    await addDoc(productsCol, data);
+                const productData = { ...form, price: Number(form.price) };
+                try {
+                    if (editId) {
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', editId), productData);
+                        alert("¡Producto actualizado!");
+                    } else {
+                        await addDoc(productsCol, productData);
+                        alert("¡Producto creado!");
+                    }
+                    setModalOpen(false);
+                    setEditId(null);
+                    setForm({ name: '', price: '', category: 'Celulares', image: '', stock: 'Disponible' });
+                } catch (err) {
+                    alert("Error al guardar");
                 }
-                setModalOpen(false);
-                setEditId(null);
-                setForm({ name: '', price: '', category: 'Celulares', image: '', stock: 'Disponible' });
             };
 
             const filtered = products.filter(p => {
@@ -114,53 +120,56 @@
 
             return (
                 <div className="min-h-screen pb-20">
-                    {/* NAVBAR GIGANTE */}
-                    <nav className="fixed top-0 w-full h-28 bg-white/95 backdrop-blur shadow-sm z-50 flex items-center px-6 border-b-4 border-black">
+                    {/* NAVBAR REFORZADA */}
+                    <nav className="fixed top-0 w-full h-32 bg-white/95 backdrop-blur z-50 flex items-center px-6 border-b-8 border-black shadow-2xl">
                         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
-                            <div className="flex items-center gap-4">
-                                <img src={LOGO_URL} className="h-20 w-auto" alt="Logo Colka" />
-                                <div className="hidden sm:block">
-                                    <h1 className="text-3xl font-black tracking-tighter uppercase">Inversiones COLKA</h1>
-                                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.4em]">Julio Valladolid</p>
+                            <div className="flex items-center gap-6">
+                                <img src={LOGO_URL} className="h-24 w-auto drop-shadow-lg" alt="Logo Colka" /> {/* LOGO MÁS GRANDE */}
+                                <div className="hidden md:block">
+                                    <h1 className="text-4xl font-black tracking-tighter uppercase leading-none italic">Inversiones COLKA</h1>
+                                    <p className="text-xs font-black text-blue-600 uppercase tracking-[0.5em] mt-1">JULIO VALLADOLID • TECNOLOGÍA</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <button onClick={() => isAdmin ? setIsAdmin(false) : setShowLogin(true)} className="p-3 text-slate-300 hover:text-black"><Lock size={24}/></button>
-                                <button onClick={() => setIsCartOpen(true)} className="relative bg-black text-white p-5 rounded-3xl shadow-xl">
-                                    <ShoppingCart size={32} />
-                                    {cart.length > 0 && <span className="absolute -top-2 -right-2 bg-red-600 w-7 h-7 rounded-full flex items-center justify-center font-black text-xs border-2 border-white">{cart.length}</span>}
+                                <button onClick={() => isAdmin ? setIsAdmin(false) : setShowLogin(true)} className="p-3 text-slate-300 hover:text-black transition-colors"><Lock size={28}/></button>
+                                <button onClick={() => setIsCartOpen(true)} className="relative bg-black text-white p-6 rounded-[2rem] shadow-[5px_5px_0px_0px_rgba(37,99,235,1)] active:scale-95 transition-all">
+                                    <ShoppingCart size={36} />
+                                    {cart.length > 0 && <span className="absolute -top-2 -right-2 bg-red-600 w-8 h-8 rounded-full flex items-center justify-center font-black text-sm border-4 border-white animate-bounce">{cart.length}</span>}
                                 </button>
                             </div>
                         </div>
                     </nav>
 
-                    <div className="pt-32 px-6 max-w-7xl mx-auto">
+                    <div className="pt-40 px-6 max-w-7xl mx-auto">
                         {isAdmin ? (
-                            /* VISTA ADMIN */
-                            <div className="animate-in fade-in duration-500">
-                                <div className="flex justify-between items-center mb-10 bg-black text-white p-8 rounded-[3rem]">
-                                    <h2 className="text-3xl font-black italic">ADMIN PANEL</h2>
-                                    <button onClick={() => { setEditId(null); setForm({name:'', price:'', category:'Celulares', image:'', stock:'Disponible'}); setModalOpen(true); }} className="bg-white text-black px-8 py-4 rounded-2xl font-black hover:bg-yellow-500 transition-colors">
+                            /* PANEL ADMIN */
+                            <div className="animate-in slide-in-from-bottom duration-500">
+                                <div className="flex flex-col sm:flex-row justify-between items-center mb-10 bg-slate-900 text-white p-10 rounded-[3.5rem] shadow-2xl">
+                                    <div className="mb-6 sm:mb-0">
+                                        <h2 className="text-4xl font-black italic text-yellow-500 uppercase tracking-tighter">Inventario Oficial</h2>
+                                        <p className="opacity-70 font-bold uppercase text-xs tracking-widest mt-2">Control de Stock y Precios</p>
+                                    </div>
+                                    <button onClick={() => { setEditId(null); setForm({name:'', price:'', category:'Celulares', image:'', stock:'Disponible'}); setModalOpen(true); }} className="bg-white text-black px-10 py-5 rounded-3xl font-black hover:bg-yellow-500 transition-all text-lg shadow-xl">
                                         + NUEVO PRODUCTO
                                     </button>
                                 </div>
-                                <div className="grid gap-4">
+                                <div className="grid gap-6">
                                     {products.map(p => (
-                                        <div key={p.id} className="bg-white p-6 rounded-[2.5rem] border-2 border-slate-100 flex items-center gap-6 shadow-sm">
-                                            <img src={p.image || LOGO_URL} className="w-24 h-24 rounded-3xl object-cover border" />
+                                        <div key={p.id} className={`bg-white p-8 rounded-[3rem] border-4 transition-all flex items-center gap-8 ${p.stock === 'Agotado' ? 'border-red-100 opacity-60' : 'border-slate-100 shadow-lg'}`}>
+                                            <img src={p.image || LOGO_URL} className="w-28 h-28 rounded-[2rem] object-cover border-4 border-slate-50" />
                                             <div className="flex-1">
-                                                <h3 className="font-black text-xl">{p.name}</h3>
-                                                <p className="text-blue-600 font-black text-2xl">S/ {p.price}</p>
+                                                <h3 className="font-black text-2xl uppercase tracking-tighter">{p.name}</h3>
+                                                <p className="text-blue-600 font-black text-3xl font-mono">S/ {p.price}</p>
                                                 <button 
-                                                    onClick={() => updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', p.id), { stock: p.stock === 'Agotado' ? 'Disponible' : 'Agotado' })}
-                                                    className={`mt-2 px-4 py-1 rounded-full text-[10px] font-black uppercase ${p.stock === 'Agotado' ? 'bg-red-600 text-white' : 'bg-green-100 text-green-700'}`}
+                                                    onClick={async () => await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', p.id), { stock: p.stock === 'Agotado' ? 'Disponible' : 'Agotado' })}
+                                                    className={`mt-3 px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest ${p.stock === 'Agotado' ? 'bg-red-600 text-white' : 'bg-green-500 text-white'}`}
                                                 >
-                                                    {p.stock === 'Agotado' ? 'Agotado' : 'En Stock'}
+                                                    {p.stock === 'Agotado' ? '● Agotado' : '● Disponible'}
                                                 </button>
                                             </div>
-                                            <div className="flex gap-2">
-                                                <button onClick={() => { setEditId(p.id); setForm(p); setModalOpen(true); }} className="p-4 bg-slate-50 rounded-2xl text-slate-400 hover:text-blue-600"><Edit2/></button>
-                                                <button onClick={() => confirm('¿Borrar?') && deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', p.id))} className="p-4 bg-slate-50 rounded-2xl text-slate-400 hover:text-red-600"><Trash2/></button>
+                                            <div className="flex gap-4">
+                                                <button onClick={() => { setEditId(p.id); setForm(p); setModalOpen(true); }} className="p-5 bg-blue-50 text-blue-600 rounded-3xl hover:bg-blue-600 hover:text-white transition-all"><Edit2 size={24}/></button>
+                                                <button onClick={() => confirm('¿Eliminar producto?') && deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', p.id))} className="p-5 bg-red-50 text-red-500 rounded-3xl hover:bg-red-600 hover:text-white transition-all"><Trash2 size={24}/></button>
                                             </div>
                                         </div>
                                     ))}
@@ -169,35 +178,39 @@
                         ) : (
                             /* VISTA CLIENTE */
                             <div className="animate-in fade-in duration-700">
-                                <div className="max-w-xl mx-auto mb-10 text-center">
-                                    <h2 className="text-5xl md:text-7xl font-black uppercase italic mb-6 leading-none">Tecnología Real</h2>
-                                    <div className="relative mb-6">
-                                        <Search className="absolute left-6 top-5 text-slate-300" size={28}/>
-                                        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Busca tu iPhone..." className="w-full bg-white border-4 border-black rounded-full py-5 pl-16 pr-8 text-xl font-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none transition-all" />
+                                <div className="max-w-4xl mx-auto mb-16 text-center">
+                                    <h2 className="text-6xl md:text-9xl font-black uppercase italic mb-8 leading-none tracking-tighter drop-shadow-xl">Colka Store</h2>
+                                    <div className="relative mb-10">
+                                        <Search className="absolute left-8 top-6 text-slate-400" size={32}/>
+                                        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Busca tu próximo equipo..." className="w-full bg-white border-8 border-black rounded-[2.5rem] py-6 pl-20 pr-10 text-2xl font-black shadow-[15px_15px_0px_0px_rgba(37,99,235,1)] outline-none focus:translate-y-2 focus:shadow-none transition-all" />
                                     </div>
-                                    {/* BOTONES DE CATEGORÍA */}
-                                    <div className="flex flex-wrap justify-center gap-2 mt-8">
+                                    {/* CATEGORÍAS */}
+                                    <div className="flex flex-wrap justify-center gap-4">
                                         {categories.map(c => (
-                                            <button key={c} onClick={() => setActiveCat(c)} className={`px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest border-2 transition-all ${activeCat === c ? 'bg-black text-white border-black' : 'bg-white text-slate-400 border-slate-100 hover:border-black hover:text-black'}`}>
+                                            <button key={c} onClick={() => setActiveCat(c)} className={`px-8 py-3 rounded-2xl font-black text-sm uppercase tracking-widest border-4 transition-all ${activeCat === c ? 'bg-black text-white border-black scale-110 shadow-xl' : 'bg-white text-slate-400 border-slate-100 hover:border-black hover:text-black'}`}>
                                                 {c}
                                             </button>
                                         ))}
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
                                     {filtered.map(p => (
-                                        <div key={p.id} className={`group bg-white rounded-[3.5rem] p-8 border-2 border-slate-100 shadow-sm flex flex-col transition-all ${p.stock === 'Agotado' ? 'opacity-50' : 'hover:shadow-2xl'}`}>
-                                            <div className="relative aspect-square mb-6 bg-slate-50 rounded-[2.5rem] flex items-center justify-center p-6 overflow-hidden">
-                                                <img src={p.image || LOGO_URL} className={`w-full h-full object-contain ${p.stock === 'Agotado' ? 'grayscale' : 'group-hover:scale-110'} transition-transform duration-500`} />
-                                                {p.stock === 'Agotado' && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><span className="bg-red-600 text-white px-6 py-1 rounded-full font-black text-xs rotate-12">AGOTADO</span></div>}
+                                        <div key={p.id} className={`group bg-white rounded-[4rem] p-10 border-4 border-slate-100 shadow-xl flex flex-col transition-all ${p.stock === 'Agotado' ? 'opacity-40 grayscale' : 'hover:border-blue-600 hover:-translate-y-4'}`}>
+                                            <div className="relative aspect-square mb-8 bg-slate-50 rounded-[3rem] flex items-center justify-center p-8 overflow-hidden border-2 border-slate-50">
+                                                <img src={p.image || LOGO_URL} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" />
+                                                {p.stock === 'Agotado' && <div className="absolute inset-0 bg-black/60 flex items-center justify-center"><span className="bg-red-600 text-white px-10 py-3 rounded-full font-black text-lg rotate-12 border-4 border-white">AGOTADO</span></div>}
                                             </div>
-                                            <h3 className="text-2xl font-black mb-1 leading-none">{p.name}</h3>
-                                            <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4">{p.category}</p>
-                                            <div className="flex items-center justify-between mt-auto">
-                                                <span className="text-4xl font-black tracking-tighter text-slate-900">S/ {p.price}</span>
-                                                <button disabled={p.stock === 'Agotado'} onClick={() => addToCart(p)} className={`p-5 rounded-3xl shadow-lg transition-all ${p.stock === 'Agotado' ? 'bg-slate-100 text-slate-300' : 'bg-black text-white hover:bg-blue-600 active:scale-90'}`}>
-                                                    {p.stock === 'Agotado' ? <X size={28}/> : <Plus size={28}/>}
+                                            <h3 className="text-3xl font-black mb-1 uppercase tracking-tighter leading-none">{p.name}</h3>
+                                            <p className="text-blue-600 font-black text-xs uppercase tracking-widest mb-6">{p.category}</p>
+                                            <div className="flex items-center justify-between mt-auto pt-6 border-t-4 border-dotted border-slate-50">
+                                                <span className="text-5xl font-black tracking-tighter text-black font-mono">S/ {p.price}</span>
+                                                <button 
+                                                    disabled={p.stock === 'Agotado'} 
+                                                    onClick={() => addToCart(p)} 
+                                                    className={`p-6 rounded-[2rem] shadow-2xl transition-all ${p.stock === 'Agotado' ? 'bg-slate-200 text-slate-400' : 'bg-black text-white hover:bg-blue-600 active:scale-90 hover:rotate-12'}`}
+                                                >
+                                                    {p.stock === 'Agotado' ? <X size={36}/> : <Plus size={36}/>}
                                                 </button>
                                             </div>
                                         </div>
@@ -207,77 +220,97 @@
                         )}
                     </div>
 
-                    {/* MODAL ADMIN (PARA EDITAR Y CREAR) */}
+                    {/* MODAL ADMIN - MODIFICAR PRODUCTO */}
                     {modalOpen && (
-                        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-6">
-                            <form onSubmit={saveProduct} className="bg-white rounded-[3rem] p-10 w-full max-w-md shadow-2xl relative">
-                                <button onClick={() => setModalOpen(false)} className="absolute top-8 right-8 text-slate-400"><X size={32}/></button>
-                                <h3 className="text-3xl font-black mb-8 uppercase italic tracking-tighter">{editId ? 'Editar Equipo' : 'Nuevo Equipo'}</h3>
-                                <div className="space-y-4">
-                                    <input required value={form.name} onChange={e=>setForm({...form, name:e.target.value})} placeholder="Nombre" className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 font-black outline-none focus:border-black"/>
-                                    <input required type="number" value={form.price} onChange={e=>setForm({...form, price:e.target.value})} placeholder="Precio S/" className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 font-black outline-none focus:border-black"/>
-                                    <select value={form.category} onChange={e=>setForm({...form, category:e.target.value})} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 font-black outline-none">
-                                        {categories.filter(c=>c!=='Todos').map(c=><option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                    <input value={form.image} onChange={e=>setForm({...form, image:e.target.value})} placeholder="URL de imagen" className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 font-black outline-none focus:border-black"/>
-                                    <button type="submit" className="w-full bg-black text-white py-6 rounded-2xl font-black text-xl hover:bg-blue-600 flex items-center justify-center gap-3">
-                                        <Save/> GUARDAR
+                        <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6">
+                            <div className="bg-white rounded-[4rem] p-12 w-full max-w-xl shadow-[20px_20px_0px_0px_rgba(37,99,235,1)] relative border-8 border-black animate-in zoom-in duration-300">
+                                <button onClick={() => setModalOpen(false)} className="absolute top-10 right-10 text-slate-400 hover:text-black"><X size={48}/></button>
+                                <h3 className="text-4xl font-black mb-10 uppercase italic tracking-tighter border-b-4 border-black pb-4 inline-block">{editId ? 'Modificar Equipo' : 'Nuevo Ingreso'}</h3>
+                                <form onSubmit={saveProduct} className="space-y-6">
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-widest ml-4 mb-2 block">Nombre del Equipo</label>
+                                        <input required value={form.name} onChange={e=>setForm({...form, name:e.target.value})} placeholder="Ej: iPhone 15 Pro Max" className="w-full bg-slate-50 border-4 border-slate-100 rounded-3xl p-5 font-black outline-none focus:border-blue-600 transition-all text-xl"/>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase tracking-widest ml-4 mb-2 block">Precio S/</label>
+                                            <input required type="number" value={form.price} onChange={e=>setForm({...form, price:e.target.value})} placeholder="0.00" className="w-full bg-slate-50 border-4 border-slate-100 rounded-3xl p-5 font-black outline-none focus:border-blue-600 transition-all text-xl font-mono"/>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase tracking-widest ml-4 mb-2 block">Categoría</label>
+                                            <select value={form.category} onChange={e=>setForm({...form, category:e.target.value})} className="w-full bg-slate-50 border-4 border-slate-100 rounded-3xl p-5 font-black outline-none appearance-none focus:border-blue-600 text-xl">
+                                                {categories.filter(c=>c!=='Todos').map(c=><option key={c} value={c}>{c}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-widest ml-4 mb-2 block">Link de Imagen (PostImage)</label>
+                                        <input value={form.image} onChange={e=>setForm({...form, image:e.target.value})} placeholder="https://..." className="w-full bg-slate-50 border-4 border-slate-100 rounded-3xl p-5 font-black outline-none focus:border-blue-600 text-xl"/>
+                                    </div>
+                                    <button type="submit" className="w-full bg-black text-white py-8 rounded-[2rem] font-black text-2xl hover:bg-blue-600 flex items-center justify-center gap-4 shadow-2xl transition-all uppercase tracking-tighter">
+                                        <Save size={32}/> {editId ? 'Actualizar Ahora' : 'Publicar Ahora'}
                                     </button>
-                                </div>
-                            </form>
+                                </form>
+                            </div>
                         </div>
                     )}
 
-                    {/* CARRITO */}
+                    {/* CARRITO FUNCIONAL */}
                     {isCartOpen && (
                         <div className="fixed inset-0 z-[100] flex justify-end bg-black/60 backdrop-blur-sm">
-                            <div className="bg-white w-full max-w-md h-full p-10 flex flex-col animate-in slide-in-from-right duration-300">
-                                <div className="flex justify-between items-center mb-10 border-b-4 border-black pb-6">
-                                    <h3 className="text-4xl font-black italic tracking-tighter">TU PEDIDO</h3>
-                                    <button onClick={() => setIsCartOpen(false)}><X size={40}/></button>
+                            <div className="bg-white w-full max-w-lg h-full p-12 flex flex-col animate-in slide-in-from-right duration-500 border-l-8 border-black shadow-2xl">
+                                <div className="flex justify-between items-center mb-12 border-b-8 border-black pb-8">
+                                    <h3 className="text-5xl font-black italic tracking-tighter uppercase">Tu Compra</h3>
+                                    <button onClick={() => setIsCartOpen(false)} className="hover:rotate-90 transition-transform"><X size={56}/></button>
                                 </div>
-                                <div className="flex-1 overflow-y-auto space-y-6 hide-scroll">
+                                <div className="flex-1 overflow-y-auto space-y-8 hide-scroll pr-4">
                                     {cart.map(item => (
-                                        <div key={item.id} className="flex gap-4 items-center bg-slate-50 p-5 rounded-[2.5rem] border border-slate-200">
-                                            <img src={item.image || LOGO_URL} className="w-20 h-20 rounded-3xl object-cover border" />
+                                        <div key={item.id} className="flex gap-6 items-center bg-slate-50 p-6 rounded-[3rem] border-4 border-slate-100 relative group">
+                                            <img src={item.image || LOGO_URL} className="w-24 h-24 rounded-[1.5rem] object-cover border-4 border-white shadow-md" />
                                             <div className="flex-1">
-                                                <h4 className="font-black text-xs uppercase leading-tight">{item.name}</h4>
-                                                <p className="font-black text-blue-600 text-xl font-mono">S/ {item.price}</p>
-                                                <div className="flex items-center gap-4 mt-2">
-                                                    <button onClick={()=>setCart(curr=>curr.map(i=>i.id===item.id?{...i,qty:Math.max(1,i.qty-1)}:i))} className="w-8 h-8 bg-white border-2 border-black rounded-lg flex items-center justify-center font-black">-</button>
-                                                    <span className="font-black">{item.qty}</span>
-                                                    <button onClick={()=>setCart(curr=>curr.map(i=>i.id===item.id?{...i,qty:i.qty+1}:i))} className="w-8 h-8 bg-white border-2 border-black rounded-lg flex items-center justify-center font-black">+</button>
+                                                <h4 className="font-black text-lg uppercase leading-tight tracking-tighter">{item.name}</h4>
+                                                <p className="font-black text-blue-600 text-2xl font-mono mt-1">S/ {item.price}</p>
+                                                <div className="flex items-center gap-6 mt-4">
+                                                    <button onClick={()=>setCart(curr=>curr.map(i=>i.id===item.id?{...i,qty:Math.max(1,i.qty-1)}:i))} className="w-10 h-10 bg-white border-4 border-black rounded-xl flex items-center justify-center font-black text-xl hover:bg-black hover:text-white transition-colors">-</button>
+                                                    <span className="font-black text-2xl">{item.qty}</span>
+                                                    <button onClick={()=>setCart(curr=>curr.map(i=>i.id===item.id?{...i,qty:i.qty+1}:i))} className="w-10 h-10 bg-white border-4 border-black rounded-xl flex items-center justify-center font-black text-xl hover:bg-black hover:text-white transition-colors">+</button>
                                                 </div>
                                             </div>
-                                            <button onClick={()=>setCart(curr=>curr.filter(i=>i.id!==item.id))} className="text-red-400 p-2"><Trash2 size={24}/></button>
+                                            <button onClick={()=>setCart(curr=>curr.filter(i=>i.id!==item.id))} className="text-red-400 p-2 hover:text-red-600 absolute -top-2 -right-2 bg-white border-2 border-slate-100 rounded-full"><Trash2 size={24}/></button>
                                         </div>
                                     ))}
-                                    {cart.length === 0 && <p className="text-center py-20 font-black opacity-20 italic">VACIÓ</p>}
+                                    {cart.length === 0 && (
+                                        <div className="text-center py-32">
+                                            <ShoppingCart size={80} className="mx-auto opacity-10 mb-6" />
+                                            <p className="font-black opacity-20 italic text-2xl uppercase tracking-tighter text-center">No hay equipos en la lista</p>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="pt-10 border-t-4 border-black mt-8">
-                                    <div className="flex justify-between text-3xl font-black mb-8 uppercase">
+                                <div className="pt-10 border-t-8 border-black mt-8">
+                                    <div className="flex justify-between text-4xl font-black mb-10 uppercase tracking-tighter">
                                         <span>Total:</span>
-                                        <span className="text-blue-600">S/ {cart.reduce((a,b)=>a+(b.price*b.qty),0)}</span>
+                                        <span className="text-blue-600 font-mono text-5xl">S/ {cart.reduce((a,b)=>a+(b.price*b.qty),0)}</span>
                                     </div>
                                     <button onClick={() => {
-                                        const msj = `¡Hola Julio! 🚀 Pedido Colka:\n` + cart.map(i=>`- ${i.qty}x ${i.name}`).join('\n') + `\nTotal: S/ ` + cart.reduce((a,b)=>a+(b.price*b.qty),0);
+                                        const msj = `¡Hola Julio! 🚀 Pedido de Inversiones COLKA:\n\n` + cart.map(i=>`• ${i.qty}x ${i.name} (S/ ${i.price})`).join('\n') + `\n\n*Total: S/ ${cart.reduce((a,b)=>a+(b.price*b.qty),0)}*`;
                                         window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msj)}`, '_blank');
-                                    }} className="w-full bg-green-500 text-white py-7 rounded-[2.5rem] font-black text-xl hover:bg-black transition-all flex items-center justify-center gap-4 shadow-xl">
-                                        PEDIR POR WHATSAPP <Phone size={28}/>
+                                    }} className="w-full bg-green-500 text-white py-8 rounded-[2.5rem] font-black text-2xl hover:bg-black transition-all flex items-center justify-center gap-6 shadow-2xl active:scale-95 border-b-[10px] border-green-700">
+                                        CONFIRMAR PEDIDO <Phone size={36}/>
                                     </button>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* LOGIN */}
+                    {/* LOGIN ADMIN */}
                     {showLogin && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90">
-                            <form onSubmit={e=>{e.preventDefault(); if(passwordInput==='hola123'){setIsAdmin(true);setShowLogin(false);setPasswordInput('')}else{alert("Clave incorrecta")}} } className="bg-white rounded-[3rem] p-12 w-full max-w-sm text-center shadow-2xl border-b-[12px] border-black">
-                                <Lock className="mx-auto mb-8 text-black" size={64}/>
-                                <h3 className="text-3xl font-black mb-4 tracking-tighter uppercase italic">Acceso Julio</h3>
-                                <input type="password" autoFocus value={passwordInput} onChange={e=>setPasswordInput(e.target.value)} placeholder="Contraseña" className="w-full bg-slate-100 border-4 border-slate-100 focus:border-black rounded-[1.5rem] p-5 mb-8 text-center font-black outline-none text-2xl transition-all"/>
-                                <button type="submit" className="w-full bg-black text-white py-6 rounded-[1.5rem] font-black text-lg shadow-xl hover:bg-yellow-500 hover:text-black transition-all">ACCEDER AHORA</button>
+                        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl animate-in fade-in duration-300">
+                            <form onSubmit={e=>{e.preventDefault(); if(passwordInput==='hola123'){setIsAdmin(true);setShowLogin(false);setPasswordInput('')}else{alert("Clave incorrecta")}} } className="bg-white rounded-[4rem] p-16 w-full max-w-md text-center shadow-[30px_30px_0px_0px_rgba(37,99,235,1)] border-8 border-black relative">
+                                <button type="button" onClick={()=>setShowLogin(false)} className="absolute top-8 right-8 text-slate-300 hover:text-black"><X size={32}/></button>
+                                <Lock className="mx-auto mb-10 text-black" size={80}/>
+                                <h3 className="text-4xl font-black mb-6 tracking-tighter uppercase italic">Control Julio</h3>
+                                <input type="password" autoFocus value={passwordInput} onChange={e=>setPasswordInput(e.target.value)} placeholder="Contraseña" className="w-full bg-slate-50 border-8 border-slate-100 focus:border-black rounded-[2rem] p-6 mb-10 text-center font-black outline-none text-3xl transition-all"/>
+                                <button type="submit" className="w-full bg-black text-white py-8 rounded-[2rem] font-black text-2xl shadow-xl hover:bg-blue-600 transition-all uppercase tracking-tighter">ENTRAR AL SISTEMA</button>
                             </form>
                         </div>
                     )}
