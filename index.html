@@ -5,15 +5,12 @@
     <title>Inversiones COLKA</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-black text-white">
     <div id="root"></div>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBcOlkenlK-ATzMg7LG12kukr7l1gPJZfY",
@@ -27,14 +24,64 @@
         window.db = getFirestore(app);
     </script>
 
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <script type="text/babel">
-        // Aquí va el diseño de la tienda que hicimos antes
         function App() {
+            const [productos, setProductos] = React.useState([]);
+            const [admin, setAdmin] = React.useState(false);
+
+            React.useEffect(() => {
+                const q = query(collection(window.db, "productos"));
+                return onSnapshot(q, (snapshot) => {
+                    setProductos(snapshot.docs.map(doc => ({id: doc.id, ...doc.data()})));
+                });
+            }, []);
+
+            const agregarProducto = async () => {
+                const nombre = prompt("Nombre del producto:");
+                const precio = prompt("Precio (S/):");
+                if(nombre && precio) {
+                    await addDoc(collection(window.db, "productos"), { nombre, precio });
+                }
+            };
+
             return (
-                <div className="min-h-screen bg-black text-white p-10">
-                    <h1 className="text-5xl font-black italic uppercase">Inversiones COLKA</h1>
-                    <p className="mt-4 text-blue-500 font-bold">¡CONEXIÓN EXITOSA!</p>
-                    <p className="text-slate-400 mt-2">Ya puedes empezar a subir tus productos.</p>
+                <div className="p-6 max-w-4xl mx-auto">
+                    <div className="flex justify-between items-center mb-10 border-b border-zinc-800 pb-6">
+                        <h1 className="text-4xl font-black italic uppercase tracking-tighter">Inversiones COLKA</h1>
+                        <button onClick={() => setAdmin(!admin)} className="text-[10px] border border-zinc-700 px-3 py-1 rounded-full uppercase font-bold">
+                            {admin ? "Cerrar Panel" : "Admin"}
+                        </button>
+                    </div>
+
+                    {admin && (
+                        <div className="bg-zinc-900 p-6 rounded-3xl mb-10 border border-zinc-800">
+                            <h2 className="font-bold mb-4 uppercase text-blue-500">Panel de Control</h2>
+                            <button onClick={agregarProducto} className="bg-white text-black px-6 py-2 rounded-xl font-black uppercase text-xs">
+                                + Nuevo Ingreso
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {productos.map(p => (
+                            <div key={p.id} className="bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-800 flex justify-between items-center">
+                                <div>
+                                    <h3 className="text-2xl font-black uppercase italic leading-none">{p.nombre}</h3>
+                                    <p className="text-blue-500 font-black mt-2 text-xl">S/ {p.precio}</p>
+                                </div>
+                                <button 
+                                    onClick={() => window.open(`https://wa.me/51983200830?text=Hola, quiero el ${p.nombre}`)}
+                                    className="bg-white text-black p-4 rounded-2xl font-black uppercase text-[10px]"
+                                >
+                                    Pedir
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             );
         }
