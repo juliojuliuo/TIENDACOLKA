@@ -9,105 +9,415 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap');
-        body { 
-            font-family: 'Inter', sans-serif; 
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
+        
+        body {
             background-color: #ffffff;
-            background-image: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)), 
+            font-family: 'Inter', sans-serif;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96)), 
             url('https://i.postimg.cc/jjP5tMDG/Gemini-Generated-Image-6rxotv6rxotv6rxo-removebg-preview.png');
-            background-attachment: fixed; background-position: center; background-repeat: no-repeat; background-size: 50%;
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 50%;
         }
+
+        .glass-nav { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px); 
+            border-bottom: 1px solid rgba(0,0,0,0.1); 
+        }
+
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        
+        /* Animaciones */
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect, useMemo } = React;
+        const { ShoppingCart, Search, Plus, Trash2, Edit2, X, Lock, MapPin, Phone, ShieldCheck, Zap, Truck, Star, Facebook, Instagram } = lucide;
 
-        const PRODUCTOS = [
-            { id: 1, nombre: 'iPhone 13 Pro', precio: '3200', cat: 'Celulares', img: 'https://images.unsplash.com/photo-1632661674596-df8be070a5c5?w=400' },
-            { id: 2, nombre: 'MacBook Air M1', precio: '3800', cat: 'Laptops', img: 'https://images.unsplash.com/photo-1611186871348-648470d23830?w=400' },
-            { id: 3, nombre: 'AirPods Pro 2', precio: '950', cat: 'Audio', img: 'https://images.unsplash.com/photo-1588423771073-b8903fbb85b5?w=400' },
-            { id: 4, nombre: 'Apple Watch S8', precio: '1600', cat: 'Gadgets', img: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=400' }
+        // --- CONFIGURACIÓN ---
+        const WHATSAPP_NUMBER = "51910457625";
+        const LOGO_URL = "https://i.postimg.cc/jjP5tMDG/Gemini-Generated-Image-6rxotv6rxotv6rxo-removebg-preview.png";
+        
+        // --- AQUÍ PEGARÁS TUS LLAVES DE FIREBASE ---
+        // Mientras tanto, déjalo así para que funcione en "Modo Demo"
+        const firebaseConfig = {
+            apiKey: "API_KEY_AQUI", // REEMPLAZAR
+            authDomain: "tu-proyecto.firebaseapp.com",
+            projectId: "tu-proyecto",
+            storageBucket: "tu-proyecto.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "tu_app_id"
+        };
+
+        // Inicialización segura de Firebase
+        let db = null;
+        let auth = null;
+        
+        try {
+            if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+                // Solo inicializa si las llaves parecen reales (evita error si no las has puesto)
+                if (firebaseConfig.apiKey !== "API_KEY_AQUI") {
+                    firebase.initializeApp(firebaseConfig);
+                    db = firebase.firestore();
+                    auth = firebase.auth();
+                }
+            }
+        } catch (e) {
+            console.log("Firebase no configurado, usando modo local.");
+        }
+
+        // Datos de respaldo (se usan si no hay Firebase)
+        const PRODUCTOS_LOCALES = [
+            { id: '1', name: 'iPhone 13 Pro', price: '3200.00', category: 'Celulares', description: '128GB, Batería 100%', image: 'https://images.unsplash.com/photo-1632661674596-df8be070a5c5?w=400' },
+            { id: '2', name: 'MacBook Air M1', price: '3800.00', category: 'Laptops', description: 'Chip M1, 8GB RAM', image: 'https://images.unsplash.com/photo-1611186871348-648470d23830?w=400' },
+            { id: '3', name: 'AirPods Pro', price: '850.00', category: 'Accesorios', description: 'Cancelación de ruido', image: 'https://images.unsplash.com/photo-1588423771073-b8903fbb85b5?w=400' },
+            { id: '4', name: 'Cargador 20W', price: '120.00', category: 'Accesorios', description: 'Original Apple', image: 'https://images.unsplash.com/photo-1624535383389-768a41db867b?w=400' }
+        ];
+
+        const CATEGORIAS_LOCALES = [
+            { id: '1', name: 'Celulares' }, { id: '2', name: 'Laptops' }, { id: '3', name: 'Accesorios' }
         ];
 
         function App() {
-            const [carrito, setCarrito] = useState([]);
-            const [mostrarCarrito, setMostrarCarrito] = useState(false);
+            const [isAdmin, setIsAdmin] = useState(false);
+            const [showLogin, setShowLogin] = useState(false);
+            const [passwordInput, setPasswordInput] = useState('');
+            
+            // Estado de datos
+            const [products, setProducts] = useState([]);
+            const [categories, setCategories] = useState([]);
+            const [loading, setLoading] = useState(true);
 
-            const total = carrito.reduce((acc, p) => acc + parseFloat(p.precio), 0);
+            // Estado de carrito y filtros
+            const [cart, setCart] = useState([]);
+            const [search, setSearch] = useState('');
+            const [activeCategory, setActiveCategory] = useState('Todos');
+            const [isCartOpen, setIsCartOpen] = useState(false);
+
+            // Estado de edición
+            const [showProductModal, setShowProductModal] = useState(false);
+            const [editingProduct, setEditingProduct] = useState(null);
+            const [newProduct, setNewProduct] = useState({ name: '', price: '', category: '', description: '', image: '' });
+
+            useEffect(() => {
+                // Cargar datos (Firebase o Local)
+                if (db) {
+                    const unsubP = db.collection('products').onSnapshot(snap => {
+                        setProducts(snap.docs.map(d => ({id: d.id, ...d.data()})));
+                        setLoading(false);
+                    }, () => setProducts(PRODUCTOS_LOCALES));
+                    
+                    const unsubC = db.collection('categories').onSnapshot(snap => {
+                        setCategories(snap.docs.map(d => ({id: d.id, ...d.data()})));
+                    }, () => setCategories(CATEGORIAS_LOCALES));
+
+                    return () => { if(unsubP) unsubP(); if(unsubC) unsubC(); };
+                } else {
+                    // Carga simulada
+                    setTimeout(() => {
+                        setProducts(PRODUCTOS_LOCALES);
+                        setCategories(CATEGORIAS_LOCALES);
+                        setLoading(false);
+                    }, 500);
+                }
+            }, []);
+
+            const filteredProducts = useMemo(() => {
+                return products.filter(p => {
+                    const mSearch = p.name?.toLowerCase().includes(search.toLowerCase());
+                    const mCat = activeCategory === 'Todos' || p.category === activeCategory;
+                    return mSearch && mCat;
+                });
+            }, [products, search, activeCategory]);
+
+            const addToCart = (p) => {
+                setCart(curr => {
+                    const match = curr.find(i => i.id === p.id);
+                    if (match) return curr.map(i => i.id === p.id ? {...i, qty: i.qty + 1} : i);
+                    return [...curr, {...p, qty: 1}];
+                });
+                setIsCartOpen(true);
+            };
+
+            const finalizarPedido = () => {
+                const total = cart.reduce((acc, i) => acc + (parseFloat(i.price) * i.qty), 0);
+                const txt = cart.map(i => `- ${i.qty}x ${i.name}`).join('\n');
+                const msg = `Hola Julio, quiero este pedido de COLKA:\n\n${txt}\n\n*Total: S/ ${total.toFixed(2)}*`;
+                window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+            };
+
+            // FUNCIONES ADMIN (CRUD)
+            const handleSaveProduct = async (e) => {
+                e.preventDefault();
+                if (db) {
+                    try {
+                        if (editingProduct) await db.collection('products').doc(editingProduct.id).update(newProduct);
+                        else await db.collection('products').add(newProduct);
+                        setShowProductModal(false);
+                    } catch(err) { alert("Error de base de datos"); }
+                } else {
+                    // Modo Local (Simulación)
+                    if (editingProduct) {
+                        setProducts(products.map(p => p.id === editingProduct.id ? {...newProduct, id: p.id} : p));
+                    } else {
+                        setProducts([...products, { ...newProduct, id: Date.now().toString() }]);
+                    }
+                    setShowProductModal(false);
+                    alert("Producto guardado (Modo Demo: se borrará al refrescar)");
+                }
+            };
+
+            const handleDeleteProduct = async (id) => {
+                if (confirm("¿Eliminar producto?")) {
+                    if (db) {
+                        await db.collection('products').doc(id).delete();
+                    } else {
+                        setProducts(products.filter(p => p.id !== id));
+                    }
+                }
+            };
+
+            if (loading) return <div className="h-screen flex items-center justify-center font-bold text-2xl tracking-widest animate-pulse">Cargando COLKA...</div>;
 
             return (
                 <div className="min-h-screen">
-                    {/* Encabezado */}
-                    <nav className="fixed w-full z-50 bg-white/90 backdrop-blur border-b-2 border-black h-24 flex items-center px-8 justify-between">
-                        <div className="flex items-center gap-4">
-                            <img src="https://i.postimg.cc/jjP5tMDG/Gemini-Generated-Image-6rxotv6rxotv6rxo-removebg-preview.png" className="h-16" />
-                            <h1 className="text-3xl font-black italic">COLKA</h1>
+                    {/* NAV */}
+                    <nav className="fixed w-full z-50 top-0 glass-nav h-24 flex items-center px-6 transition-all">
+                        <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
+                            <div className="flex items-center gap-4 cursor-pointer" onClick={() => window.scrollTo({top:0, behavior:'smooth'})}>
+                                <img src={LOGO_URL} alt="Logo" className="h-16 w-auto drop-shadow-md" />
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] tracking-[0.4em] text-slate-500 font-bold uppercase">Inversiones</span>
+                                    <h1 className="text-2xl md:text-3xl font-black text-black leading-none">COLKA</h1>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-6">
+                                <button onClick={() => isAdmin ? setIsAdmin(false) : setShowLogin(true)} className="text-slate-500 font-bold text-xs flex items-center gap-1 hover:text-black transition-colors">
+                                    <Lock size={16}/> {isAdmin ? 'SALIR' : 'ADMIN'}
+                                </button>
+                                <button onClick={() => setIsCartOpen(true)} className="relative bg-black text-white p-3.5 rounded-2xl shadow-lg active:scale-95 transition-transform hover:bg-slate-800">
+                                    <ShoppingCart size={28} />
+                                    {cart.length > 0 && <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[11px] w-6 h-6 rounded-full flex items-center justify-center font-bold border-2 border-white animate-bounce">{cart.length}</span>}
+                                </button>
+                            </div>
                         </div>
-                        <button onClick={() => setMostrarCarrito(true)} className="bg-black text-white px-6 py-3 rounded-2xl font-bold flex gap-2">
-                            🛒 <span>{carrito.length}</span>
-                        </button>
                     </nav>
 
-                    {/* Contenido */}
-                    <main className="pt-40 pb-20 px-6 max-w-7xl mx-auto">
-                        <header className="text-center mb-16">
-                            <h2 className="text-6xl font-black uppercase italic tracking-tighter mb-4">Inversiones COLKA</h2>
-                            <p className="text-slate-500 text-xl font-medium">Garantía Certificada por Julio Valladolid</p>
-                        </header>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {PRODUCTOS.map(p => (
-                                <div key={p.id} className="bg-white/80 backdrop-blur p-6 rounded-[3rem] shadow-xl border border-slate-100 hover:-translate-y-2 transition-all">
-                                    <img src={p.img} className="w-full h-48 object-contain mb-6" />
-                                    <h3 className="text-2xl font-black mb-1">{p.nombre}</h3>
-                                    <p className="text-blue-600 font-bold text-xs uppercase mb-6">{p.cat}</p>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-2xl font-black">S/ {p.precio}</span>
-                                        <button 
-                                            onClick={() => { setCarrito([...carrito, p]); setMostrarCarrito(true); }}
-                                            className="bg-black text-white w-12 h-12 rounded-full font-bold text-xl hover:bg-blue-600 transition-colors"
-                                        >+</button>
+                    <div className="pt-24">
+                        {isAdmin ? (
+                            /* --- VISTA ADMIN --- */
+                            <div className="max-w-7xl mx-auto px-4 py-12 fade-in">
+                                <div className="bg-slate-900 text-white rounded-[2.5rem] p-10 mb-8 flex flex-col md:flex-row justify-between items-center shadow-2xl">
+                                    <div className="mb-6 md:mb-0">
+                                        <h2 className="text-3xl font-black mb-1">Hola Julio Valladolid</h2>
+                                        <p className="text-slate-400">Control de inventario para Franklin.</p>
+                                        {!db && <span className="inline-block mt-2 bg-yellow-500 text-black text-[10px] font-bold px-2 py-1 rounded">MODO DEMO (Sin conexión DB)</span>}
                                     </div>
+                                    <button onClick={() => { setEditingProduct(null); setNewProduct({name:'', price:'', category:'', description:'', image:''}); setShowProductModal(true); }} className="bg-white text-black px-8 py-4 rounded-xl font-bold transition-all hover:bg-yellow-400 hover:scale-105 shadow-lg">+ NUEVO PRODUCTO</button>
                                 </div>
-                            ))}
-                        </div>
-                    </main>
-
-                    {/* Carrito Lateral */}
-                    {mostrarCarrito && (
-                        <div className="fixed inset-0 z-[100] flex justify-end">
-                            <div className="absolute inset-0 bg-black/60" onClick={() => setMostrarCarrito(false)}></div>
-                            <div className="relative w-full max-w-md bg-white h-full p-10 flex flex-col shadow-2xl">
-                                <div className="flex justify-between items-center mb-10">
-                                    <h3 className="text-3xl font-black italic">Tu Pedido</h3>
-                                    <button onClick={() => setMostrarCarrito(false)} className="text-2xl">✕</button>
-                                </div>
-                                <div className="flex-1 overflow-y-auto space-y-4">
-                                    {carrito.map((p, i) => (
-                                        <div key={i} className="flex gap-4 items-center bg-slate-50 p-4 rounded-3xl">
-                                            <img src={p.img} className="w-16 h-16 object-contain" />
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {products.map(p => (
+                                        <div key={p.id} className="bg-white p-4 rounded-3xl border flex items-center gap-4 hover:shadow-md transition-shadow">
+                                            <img src={p.image || LOGO_URL} className="w-16 h-16 object-contain rounded-xl bg-slate-50 p-2" />
                                             <div className="flex-1">
-                                                <h4 className="font-bold">{p.nombre}</h4>
-                                                <span className="font-black text-blue-600">S/ {p.precio}</span>
+                                                <h4 className="font-bold text-slate-900">{p.name}</h4>
+                                                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tighter">{p.category}</p>
+                                                <p className="font-black">S/ {p.price}</p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button onClick={()=>{setEditingProduct(p); setNewProduct(p); setShowProductModal(true)}} className="text-blue-500 p-2 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 size={18}/></button>
+                                                <button onClick={()=>handleDeleteProduct(p.id)} className="text-red-400 p-2 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18}/></button>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
-                                <div className="pt-8 border-t mt-8">
-                                    <div className="flex justify-between text-2xl font-black mb-8">
-                                        <span>TOTAL</span>
-                                        <span>S/ {total.toFixed(2)}</span>
+                            </div>
+                        ) : (
+                            /* --- VISTA CLIENTE --- */
+                            <>
+                                {/* BANNER */}
+                                <div className="bg-black text-white h-[400px] flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1556656793-062ff987b50c?q=80&w=1200" className="absolute inset-0 w-full h-full object-cover opacity-30 grayscale hover:scale-105 transition-transform duration-[20s]" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80"></div>
+                                    <div className="relative z-10 animate-in slide-in-from-bottom duration-1000">
+                                        <h2 className="text-5xl md:text-8xl font-black tracking-tighter italic mb-4 uppercase leading-none drop-shadow-2xl">Inversiones COLKA</h2>
+                                        <p className="text-slate-300 text-lg md:text-2xl font-light tracking-wide">Garantía certificada por Julio Valladolid.</p>
                                     </div>
-                                    <button 
-                                        onClick={() => window.open(`https://wa.me/51910457625?text=Hola Julio, quiero este pedido de COLKA por un total de S/ ${total}`)}
-                                        className="w-full bg-green-500 text-white py-6 rounded-[2rem] font-black text-xl hover:bg-green-600 shadow-xl"
-                                    >PEDIR POR WHATSAPP</button>
                                 </div>
+
+                                <div className="max-w-7xl mx-auto px-4 -mt-10 relative z-20 pb-20">
+                                    {/* BUSCADOR */}
+                                    <div className="max-w-xl mx-auto relative mb-12">
+                                        <Search className="absolute left-6 top-5 text-slate-400" size={24}/>
+                                        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Busca tu iPhone, laptop o accesorio..." className="w-full bg-white border-none rounded-full py-5 pl-16 pr-6 text-lg outline-none focus:ring-4 focus:ring-blue-100 transition-all shadow-2xl placeholder:text-slate-300 font-medium" />
+                                    </div>
+
+                                    {/* CATEGORÍAS */}
+                                    <div className="flex justify-center flex-wrap gap-3 mb-16">
+                                        <button onClick={()=>setActiveCategory('Todos')} className={`px-8 py-3 rounded-full text-xs font-black transition-all duration-300 ${activeCategory==='Todos' ? 'bg-black text-white shadow-xl scale-110' : 'bg-white/80 border text-slate-600 hover:bg-white hover:shadow-lg'}`}>TODOS</button>
+                                        {categories.map(c => (
+                                            <button key={c.id} onClick={()=>setActiveCategory(c.name)} className={`px-8 py-3 rounded-full text-xs font-black transition-all duration-300 ${activeCategory===c.name ? 'bg-black text-white shadow-xl scale-110' : 'bg-white/80 border text-slate-600 hover:bg-white hover:shadow-lg'}`}>{c.name.toUpperCase()}</button>
+                                        ))}
+                                    </div>
+
+                                    {/* PRODUCTOS GRID */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-24">
+                                        {filteredProducts.map(p => (
+                                            <div key={p.id} className="group bg-white/90 backdrop-blur-sm rounded-[3rem] p-5 border border-slate-100 hover:shadow-2xl transition-all duration-500 flex flex-col hover:-translate-y-2">
+                                                <div className="bg-slate-50 rounded-[2.5rem] aspect-square w-full mb-6 flex items-center justify-center p-6 overflow-hidden relative">
+                                                    <img src={p.image || LOGO_URL} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 mix-blend-multiply"/>
+                                                </div>
+                                                <div className="px-2 pb-2 flex-1 flex flex-col">
+                                                    <h3 className="font-black text-xl mb-1 text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">{p.name}</h3>
+                                                    <p className="text-xs text-slate-500 line-clamp-2 mb-6 h-8 font-medium">{p.description || "Garantía Inversiones COLKA."}</p>
+                                                    <div className="flex items-center justify-between mt-auto">
+                                                        <span className="text-3xl font-black text-slate-900 tracking-tighter">S/ {p.price}</span>
+                                                        <button onClick={()=>addToCart(p)} className="bg-black text-white p-4 rounded-full shadow-xl active:scale-90 transition-all hover:bg-blue-600 group-hover:rotate-90 duration-500"><Plus size={24}/></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* ICONOS */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-24">
+                                        {[
+                                            {icon: <ShieldCheck size={32} className="text-blue-600"/>, t: "Garantía Real", d: "Equipos certificados"},
+                                            {icon: <Zap size={32} className="text-yellow-500"/>, t: "Soporte Técnico", d: "Reparación oficial"},
+                                            {icon: <Truck size={32} className="text-green-600"/>, t: "Envíos", d: "A todo Tayacaja"},
+                                            {icon: <Star size={32} className="text-orange-500"/>, t: "Confianza", d: "Prestigio local"},
+                                        ].map((item, i) => (
+                                            <div key={i} className="bg-white/90 backdrop-blur p-8 rounded-[2.5rem] text-center shadow-sm border border-slate-50 transition-transform hover:-translate-y-2 hover:shadow-lg duration-300">
+                                                <div className="flex justify-center mb-4 transform group-hover:scale-110 transition-transform">{item.icon}</div>
+                                                <h4 className="font-black text-slate-900 mb-1">{item.t}</h4>
+                                                <p className="text-[11px] text-slate-400 font-black uppercase tracking-widest">{item.d}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* UBICACIÓN & TESTIMONIOS */}
+                                    <div className="bg-slate-900 text-white rounded-[3rem] p-12 md:p-20 mb-24 shadow-2xl relative overflow-hidden">
+                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                            <div>
+                                                <h2 className="text-4xl font-black mb-8">Nuestros Clientes</h2>
+                                                <div className="space-y-6">
+                                                    {[
+                                                        {n: "Carlos Mendívil", t: "El mejor precio en iPhones. Garantía al 100%.", s: 5},
+                                                        {n: "Lucía Ortiz", t: "Repararon mi pantalla en tiempo récord.", s: 5}
+                                                    ].map((tes, i) => (
+                                                        <div key={i}>
+                                                            <div className="flex text-yellow-400 mb-1">{[...Array(tes.s)].map((_,x)=><Star key={x} size={14} fill="currentColor"/>)}</div>
+                                                            <p className="italic text-slate-300 text-sm">"{tes.t}"</p>
+                                                            <h5 className="font-black text-xs text-blue-400 mt-1">{tes.n}</h5>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="h-[300px] rounded-[2rem] overflow-hidden">
+                                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.666986567234!2d-74.6865664!3d-12.0664973!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x910e964893693e5b%3A0x633181829e06402d!2sColcabamba%2C%20Per%C3%fa!5e0!3m2!1ses!2sus!4v1700000000000!5m2!1ses!2sus" width="100%" height="100%" style={{border:0}} allowFullScreen loading="lazy"></iframe>
+                                            </div>
+                                         </div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    <footer className="bg-white/90 backdrop-blur border-t py-12 text-center">
+                        <div className="max-w-7xl mx-auto px-4">
+                            <img src={LOGO_URL} className="h-16 mx-auto mb-4 opacity-50 hover:opacity-100 transition-opacity" />
+                            <p className="text-slate-400 text-xs mb-4 tracking-widest uppercase font-black">© 2026 - Julio Cesar Valladolid Acevedo</p>
+                            <div className="flex justify-center gap-6">
+                                <Facebook className="text-slate-300 hover:text-blue-600 cursor-pointer" size={24}/>
+                                <Instagram className="text-slate-300 hover:text-pink-600 cursor-pointer" size={24}/>
+                            </div>
+                        </div>
+                    </footer>
+
+                    {/* MODAL LOGIN */}
+                    {showLogin && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in zoom-in duration-300">
+                            <form onSubmit={e=>{e.preventDefault(); if(passwordInput==='hola123'){setIsAdmin(true);setShowLogin(false);setPasswordInput('')}else{alert("Clave incorrecta")}} } className="bg-white rounded-[2rem] p-12 w-full max-w-sm text-center shadow-2xl relative">
+                                <Lock className="mx-auto mb-6 text-slate-900" size={48}/>
+                                <h3 className="text-2xl font-black mb-2">Panel Admin</h3>
+                                <input type="password" autoFocus value={passwordInput} onChange={e=>setPasswordInput(e.target.value)} placeholder="Contraseña" className="w-full bg-slate-50 border rounded-2xl p-4 mb-6 text-center font-bold outline-none text-xl"/>
+                                <button type="submit" className="w-full bg-black text-white py-5 rounded-2xl font-black shadow-xl">ENTRAR</button>
+                                <button type="button" onClick={()=>setShowLogin(false)} className="mt-4 text-xs font-bold text-slate-400">CANCELAR</button>
+                            </form>
+                        </div>
+                    )}
+
+                    {/* MODAL PRODUCTO (ADMIN) */}
+                    {showProductModal && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
+                            <form onSubmit={handleSaveProduct} className="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl overflow-y-auto max-h-[90vh]">
+                                <h3 className="text-3xl font-black mb-8 tracking-tight">{editingProduct ? 'Editar' : 'Nuevo'} Producto</h3>
+                                <div className="space-y-6">
+                                    <input required value={newProduct.name} onChange={e=>setNewProduct({...newProduct, name:e.target.value})} placeholder="Nombre" className="w-full bg-slate-50 border-none p-5 rounded-2xl font-bold outline-none"/>
+                                    <div className="flex gap-4">
+                                        <select required value={newProduct.category} onChange={e=>setNewProduct({...newProduct, category:e.target.value})} className="w-1/2 bg-slate-50 border-none p-5 rounded-2xl font-bold outline-none">
+                                            <option value="">Categoría...</option>
+                                            {categories.map(c=><option key={c.id} value={c.name}>{c.name}</option>)}
+                                        </select>
+                                        <input required type="number" step="0.01" value={newProduct.price} onChange={e=>setNewProduct({...newProduct, price:e.target.value})} placeholder="S/ Precio" className="w-1/2 bg-slate-50 border-none p-5 rounded-2xl font-bold outline-none"/>
+                                    </div>
+                                    <input value={newProduct.image} onChange={e=>setNewProduct({...newProduct, image:e.target.value})} placeholder="URL Imagen" className="w-full bg-slate-50 border-none p-5 rounded-2xl font-bold outline-none"/>
+                                    <textarea value={newProduct.description} onChange={e=>setNewProduct({...newProduct, description:e.target.value})} placeholder="Detalles técnicos..." className="w-full bg-slate-50 border-none p-5 rounded-2xl font-bold outline-none h-28 resize-none"></textarea>
+                                </div>
+                                <div className="flex gap-4 mt-10">
+                                    <button type="button" onClick={()=>setShowProductModal(false)} className="flex-1 font-black text-slate-400">Cerrar</button>
+                                    <button type="submit" className="flex-1 bg-black text-white py-5 rounded-2xl font-black shadow-xl">GUARDAR</button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+
+                    {/* CARRITO */}
+                    {isCartOpen && (
+                        <div className="fixed inset-0 z-[100] flex justify-end">
+                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={()=>setIsCartOpen(false)}></div>
+                            <div className="relative w-full max-w-md bg-white h-full shadow-2xl p-10 flex flex-col animate-in slide-in-from-right duration-500 rounded-l-[3rem]">
+                                <div className="flex justify-between items-center mb-10 pb-6 border-b">
+                                    <h3 className="text-4xl font-black italic tracking-tighter">Tu Pedido</h3>
+                                    <button onClick={()=>setIsCartOpen(false)} className="bg-slate-100 p-3 rounded-full hover:bg-slate-200"><X size={28}/></button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-6 hide-scroll">
+                                    {cart.length === 0 && <p className="text-center py-20 text-slate-300 font-black italic uppercase">Sin Productos</p>}
+                                    {cart.map((i, idx) => (
+                                        <div key={idx} className="flex gap-5 items-center bg-slate-50 p-5 rounded-[2rem] border shadow-sm">
+                                            <img src={i.image || LOGO_URL} className="w-20 h-20 rounded-2xl object-cover border p-1 bg-white"/>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="font-black text-slate-900 text-sm truncate">{i.name}</h4>
+                                                <span className="font-black text-blue-600 text-xl tracking-tighter">S/ {parseFloat(i.price).toFixed(2)}</span>
+                                            </div>
+                                            <button onClick={()=>setCart(v=>v.filter((_,index)=>index!==idx))} className="text-slate-300 hover:text-red-500"><Trash2 size={24}/></button>
+                                        </div>
+                                    ))}
+                                </div>
+                                {cart.length > 0 && (
+                                    <div className="pt-8 mt-8 border-t">
+                                        <div className="flex justify-between items-end mb-8">
+                                            <span className="font-black text-slate-400 uppercase text-xs">Total</span>
+                                            <span className="text-5xl font-black tracking-tighter text-slate-900">S/ {cart.reduce((acc, i) => acc + (parseFloat(i.price) * i.qty), 0).toFixed(2)}</span>
+                                        </div>
+                                        <button onClick={finalizarPedido} className="w-full bg-green-500 text-white py-6 rounded-[2.5rem] font-black text-xl shadow-2xl hover:bg-green-600 transition-colors">PEDIR POR WHATSAPP</button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
