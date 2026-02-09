@@ -5,13 +5,18 @@
     <title>Inversiones COLKA</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-black text-white">
+<body class="bg-black text-white font-sans">
     <div id="root"></div>
 
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        // Tus datos reales que vimos en la imagen
         const firebaseConfig = {
             apiKey: "AIzaSyBcOlkenlK-ATzMg7LG12kukr7l1gPJZfY",
             authDomain: "inversiones-colka.firebaseapp.com",
@@ -22,66 +27,71 @@
         };
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
+        window.dbFunctions = { collection, addDoc, onSnapshot };
     </script>
-
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <script type="text/babel">
         function App() {
             const [productos, setProductos] = React.useState([]);
-            const [admin, setAdmin] = React.useState(false);
+            const [cargando, setCargando] = React.useState(true);
 
             React.useEffect(() => {
-                const q = query(collection(window.db, "productos"));
-                return onSnapshot(q, (snapshot) => {
-                    setProductos(snapshot.docs.map(doc => ({id: doc.id, ...doc.data()})));
-                });
+                // Esperamos un segundo a que conecte con Firebase
+                setTimeout(() => {
+                    const { collection, onSnapshot } = window.dbFunctions;
+                    const unsub = onSnapshot(collection(window.db, "productos"), (snap) => {
+                        setProductos(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                        setCargando(false);
+                    });
+                    return () => unsub();
+                }, 1000);
             }, []);
 
             const agregarProducto = async () => {
-                const nombre = prompt("Nombre del producto:");
-                const precio = prompt("Precio (S/):");
-                if(nombre && precio) {
+                const nombre = prompt("Nombre del equipo (ej: iPhone 15):");
+                const precio = prompt("Precio en Soles (S/):");
+                if (nombre && precio) {
+                    const { collection, addDoc } = window.dbFunctions;
                     await addDoc(collection(window.db, "productos"), { nombre, precio });
+                    alert("¡Producto agregado con éxito!");
                 }
             };
 
             return (
-                <div className="p-6 max-w-4xl mx-auto">
-                    <div className="flex justify-between items-center mb-10 border-b border-zinc-800 pb-6">
-                        <h1 className="text-4xl font-black italic uppercase tracking-tighter">Inversiones COLKA</h1>
-                        <button onClick={() => setAdmin(!admin)} className="text-[10px] border border-zinc-700 px-3 py-1 rounded-full uppercase font-bold">
-                            {admin ? "Cerrar Panel" : "Admin"}
+                <div className="p-8 max-w-5xl mx-auto">
+                    <header className="flex justify-between items-center mb-12 border-b border-zinc-800 pb-8">
+                        <div>
+                            <span className="text-blue-500 text-[10px] font-bold uppercase tracking-widest">Inversiones</span>
+                            <h1 className="text-5xl font-black italic uppercase tracking-tighter">COLKA</h1>
+                        </div>
+                        <button onClick={agregarProducto} className="bg-white text-black px-6 py-3 rounded-2xl font-black uppercase text-[10px] hover:bg-blue-500 transition-colors">
+                            + Agregar Producto
                         </button>
-                    </div>
+                    </header>
 
-                    {admin && (
-                        <div className="bg-zinc-900 p-6 rounded-3xl mb-10 border border-zinc-800">
-                            <h2 className="font-bold mb-4 uppercase text-blue-500">Panel de Control</h2>
-                            <button onClick={agregarProducto} className="bg-white text-black px-6 py-2 rounded-xl font-black uppercase text-xs">
-                                + Nuevo Ingreso
-                            </button>
+                    {cargando ? (
+                        <p className="text-zinc-500 animate-pulse uppercase font-bold tracking-widest text-xs text-center mt-20">Conectando con la base de datos...</p>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {productos.map(p => (
+                                <div key={p.id} className="bg-zinc-900 border border-zinc-800 p-8 rounded-[3rem] hover:border-blue-500 transition-all">
+                                    <h3 className="text-3xl font-black italic uppercase leading-none mb-4">{p.nombre}</h3>
+                                    <p className="text-4xl font-black text-blue-500 italic mb-8">S/ {p.precio}</p>
+                                    <button 
+                                        onClick={() => window.open(`https://wa.me/51983200830?text=Hola, me interesa el ${p.nombre}`)}
+                                        className="w-full bg-white text-black py-4 rounded-2xl font-black uppercase text-xs"
+                                    >
+                                        Pedir por WhatsApp
+                                    </button>
+                                </div>
+                            ))}
+                            {productos.length === 0 && (
+                                <div className="col-span-full py-20 text-center border-2 border-dashed border-zinc-800 rounded-[3rem]">
+                                    <p className="text-zinc-500 font-bold uppercase tracking-widest">La tienda está vacía. <br/> Usa el botón de arriba para subir tu primer celular.</p>
+                                </div>
+                            )}
                         </div>
                     )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {productos.map(p => (
-                            <div key={p.id} className="bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-800 flex justify-between items-center">
-                                <div>
-                                    <h3 className="text-2xl font-black uppercase italic leading-none">{p.nombre}</h3>
-                                    <p className="text-blue-500 font-black mt-2 text-xl">S/ {p.precio}</p>
-                                </div>
-                                <button 
-                                    onClick={() => window.open(`https://wa.me/51983200830?text=Hola, quiero el ${p.nombre}`)}
-                                    className="bg-white text-black p-4 rounded-2xl font-black uppercase text-[10px]"
-                                >
-                                    Pedir
-                                </button>
-                            </div>
-                        ))}
-                    </div>
                 </div>
             );
         }
