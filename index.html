@@ -2,28 +2,19 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inversiones COLKA</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #ffffff; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-    </style>
 </head>
 <body>
     <div id="root"></div>
-
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // TUS DATOS REALES DE FIREBASE (sacados de tu imagen)
         const firebaseConfig = {
             apiKey: "AIzaSyBcOlkenlK-ATzMg7LG12kukr7l1gPJZfY",
             authDomain: "inversiones-colka.firebaseapp.com",
@@ -32,125 +23,21 @@
             messagingSenderId: "760185289386",
             appId: "1:760185289386:web:b7f0b49334b04efd40aed3"
         };
-
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        window.db = db; // Para que React lo vea
+        window.db = getFirestore(app);
     </script>
 
     <script type="text/babel">
-        const { ShoppingCart, Search, Plus, Trash2, LayoutDashboard, Store, Smartphone, Phone, MapPin, X } = lucide;
-
+        // Aquí va el diseño de la tienda que hicimos antes
         function App() {
-            const [isAdmin, setIsAdmin] = React.useState(false);
-            const [products, setProducts] = React.useState([]);
-            const [cart, setCart] = React.useState([]);
-            const [isCartOpen, setIsCartOpen] = React.useState(false);
-
-            // Escuchar productos en tiempo real
-            React.useEffect(() => {
-                const unsub = onSnapshot(collection(window.db, "productos"), (snap) => {
-                    setProducts(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-                });
-                return () => unsub();
-            }, []);
-
-            const addToCart = (p) => {
-                setCart([...cart, p]);
-                setIsCartOpen(true);
-            };
-
-            const finalizarPedido = () => {
-                const msg = `Hola Inversiones COLKA, quiero: ` + cart.map(i => i.nombre).join(", ");
-                window.open(`https://wa.me/51983200830?text=${encodeURIComponent(msg)}`);
-            };
-
             return (
-                <div className="min-h-screen">
-                    <nav className="bg-white/80 backdrop-blur-md border-b p-6 sticky top-0 z-50 flex justify-between items-center">
-                        <div onClick={() => setIsAdmin(false)} className="cursor-pointer">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em]">Inversiones</span>
-                            <h1 className="text-3xl font-black italic uppercase leading-none">COLKA</h1>
-                        </div>
-                        <div className="flex gap-4">
-                            <button onClick={() => setIsAdmin(!isAdmin)} className="p-3 bg-slate-100 rounded-2xl hover:bg-slate-200 transition-colors">
-                                {isAdmin ? <Store size={20}/> : <LayoutDashboard size={20}/>}
-                            </button>
-                            <button onClick={() => setIsCartOpen(true)} className="bg-black text-white p-3 rounded-2xl flex items-center gap-3">
-                                <ShoppingCart size={20} />
-                                <span className="font-bold">{cart.length}</span>
-                            </button>
-                        </div>
-                    </nav>
-
-                    {isAdmin ? (
-                        <div className="p-10 max-w-4xl mx-auto">
-                            <h2 className="text-4xl font-black italic uppercase mb-8">Panel Admin</h2>
-                            <button onClick={async () => {
-                                const nombre = prompt("Nombre del equipo:");
-                                const precio = prompt("Precio:");
-                                if(nombre && precio) await addDoc(collection(window.db, "productos"), { nombre, precio });
-                            }} className="bg-black text-white px-6 py-4 rounded-xl font-bold uppercase text-xs tracking-widest">
-                                + Agregar Producto
-                            </button>
-                            <div className="mt-10 space-y-4">
-                                {products.map(p => (
-                                    <div key={p.id} className="flex justify-between items-center p-4 bg-slate-50 rounded-xl">
-                                        <span className="font-bold uppercase italic">{p.nombre} - S/ {p.precio}</span>
-                                        <button onClick={() => deleteDoc(doc(window.db, "productos", p.id))} className="text-red-500"><Trash2 size={20}/></button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ) : (
-                        <main className="p-10">
-                            <div className="text-center mb-20">
-                                <h2 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter leading-none">Tecnología <br/> de Élite</h2>
-                                <p className="text-slate-400 mt-4 uppercase tracking-widest text-xs font-bold">Colcabamba - Tayacaja</p>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                {products.map(p => (
-                                    <div key={p.id} className="bg-white border rounded-[2.5rem] p-8 hover:shadow-2xl transition-all group">
-                                        <div className="aspect-square bg-slate-50 rounded-[2rem] mb-6 flex items-center justify-center">
-                                            <Smartphone size={60} className="text-slate-200" />
-                                        </div>
-                                        <h3 className="text-2xl font-black italic uppercase mb-2">{p.nombre}</h3>
-                                        <div className="flex justify-between items-center mt-6">
-                                            <span className="text-3xl font-black italic">S/ {p.precio}</span>
-                                            <button onClick={() => addToCart(p)} className="bg-black text-white p-4 rounded-2xl group-hover:bg-blue-600 transition-colors">
-                                                <Plus />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </main>
-                    )}
-
-                    {isCartOpen && (
-                        <div className="fixed inset-0 z-[100] flex justify-end">
-                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
-                            <div className="relative w-80 bg-white h-full p-8 flex flex-col shadow-2xl">
-                                <div className="flex justify-between items-center mb-10">
-                                    <h3 className="text-2xl font-black italic uppercase">Pedido</h3>
-                                    <button onClick={() => setIsCartOpen(false)}><X/></button>
-                                </div>
-                                <div className="flex-1 space-y-4">
-                                    {cart.map((item, idx) => (
-                                        <div key={idx} className="font-bold border-b pb-2 uppercase text-xs italic">{item.nombre}</div>
-                                    ))}
-                                </div>
-                                <button onClick={finalizarPedido} className="w-full bg-green-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2">
-                                    <Phone size={20}/> WhatsApp
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                <div className="min-h-screen bg-black text-white p-10">
+                    <h1 className="text-5xl font-black italic uppercase">Inversiones COLKA</h1>
+                    <p className="mt-4 text-blue-500 font-bold">¡CONEXIÓN EXITOSA!</p>
+                    <p className="text-slate-400 mt-2">Ya puedes empezar a subir tus productos.</p>
                 </div>
             );
         }
-
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
