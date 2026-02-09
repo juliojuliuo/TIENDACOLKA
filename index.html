@@ -3,46 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inversiones COLKA | Tecnología Premium</title>
-    
+    <title>Inversiones COLKA | Panel Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap');
-        
-        body { 
-            font-family: 'Outfit', sans-serif; 
-            background-color: #050505; 
-            color: #ffffff; 
-            overflow-x: hidden;
-        }
-        
-        /* Efecto de cristal (Glassmorphism) */
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .hero-gradient {
-            background: radial-gradient(circle at center, #1d4ed8 0%, #000000 70%);
-        }
-
-        .text-gradient {
-            background: linear-gradient(to right, #3b82f6, #06b6d4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap');
+        body { font-family: 'Outfit', sans-serif; background-color: #050505; color: white; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .input-dark { background: #111; border: 1px solid #333; color: white; outline: none; transition: 0.3s; }
+        .input-dark:focus { border-color: #3b82f6; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="root" class="min-h-screen flex items-center justify-center text-zinc-500">
+        Cargando Inversiones COLKA...
+    </div>
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <script type="module">
@@ -57,231 +35,167 @@
             messagingSenderId: "760185289386",
             appId: "1:760185289386:web:b7f0b49334b04efd40aed3"
         };
-        
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
         window.api = { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc };
     </script>
 
     <script type="text/babel">
-        // Inicializamos animaciones
-        AOS.init();
-        
-        const { ShoppingCart, User, MapPin, Phone, Star, Edit, Trash2, X, Check, Smartphone, ShieldCheck, Truck } = lucide;
+        const { ShoppingCart, Edit, Trash2, X, Phone, MapPin, Smartphone, ShieldCheck, Lock } = lucide;
 
         function App() {
             const [productos, setProductos] = React.useState([]);
             const [admin, setAdmin] = React.useState(false);
-            const [password, setPassword] = React.useState("");
             const [showLogin, setShowLogin] = React.useState(false);
-            const [categoria, setCategoria] = React.useState("Todos");
-            const [productoEditando, setProductoEditando] = React.useState(null);
+            const [pass, setPass] = React.useState("");
+            const [editando, setEditando] = React.useState(null); // Producto siendo editado
+            const [filtro, setFiltro] = React.useState("Todos");
 
             // Cargar productos
             React.useEffect(() => {
-                const interval = setInterval(() => {
+                const checkDb = setInterval(() => {
                     if (window.api) {
-                        clearInterval(interval);
-                        window.api.onSnapshot(window.api.collection(window.db, "productos"), (snap) => {
-                            setProductos(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                        clearInterval(checkDb);
+                        const { collection, onSnapshot } = window.api;
+                        onSnapshot(collection(window.db, "productos"), (snap) => {
+                            setProductos(snap.docs.map(d => ({ id: d.id, ...d.data() })));
                         });
                     }
                 }, 500);
             }, []);
 
-            // Función de Login Seguro
-            const handleLogin = () => {
-                if (password === "hola123") { // CONTRASEÑA
+            // Login
+            const ingresar = () => {
+                if(pass === "hola123") {
                     setAdmin(true);
                     setShowLogin(false);
-                    setPassword("");
+                    setPass("");
                 } else {
                     alert("Contraseña incorrecta");
                 }
             };
 
-            // Guardar o Editar Producto
-            const guardarProducto = async (e) => {
+            // Guardar (Nuevo o Editar)
+            const guardar = async (e) => {
                 e.preventDefault();
-                const form = e.target;
+                const { nombre, precio, categoria, stock } = e.target.elements;
                 const datos = {
-                    nombre: form.nombre.value,
-                    precio: form.precio.value,
-                    categoria: form.categoria.value,
-                    stock: form.stock.value,
-                    descripcion: form.descripcion.value
+                    nombre: nombre.value,
+                    precio: precio.value,
+                    categoria: categoria.value,
+                    stock: stock.value
                 };
 
                 try {
-                    if (productoEditando) {
-                        await window.api.updateDoc(window.api.doc(window.db, "productos", productoEditando.id), datos);
+                    const { collection, addDoc, doc, updateDoc } = window.api;
+                    if(editando) {
+                        await updateDoc(doc(window.db, "productos", editando.id), datos);
+                        alert("Producto actualizado");
                     } else {
-                        await window.api.addDoc(window.api.collection(window.db, "productos"), datos);
+                        await addDoc(collection(window.db, "productos"), datos);
+                        alert("Producto creado");
                     }
-                    setProductoEditando(null);
-                    form.reset();
-                    alert("Guardado con éxito");
-                } catch (error) {
-                    console.error(error);
-                    alert("Error al guardar");
+                    setEditando(null);
+                    e.target.reset();
+                } catch(err) {
+                    alert("Error: " + err.message);
                 }
             };
 
-            const eliminarProducto = async (id) => {
-                if(confirm("¿Seguro que deseas eliminar este producto?")) {
+            const borrar = async (id) => {
+                if(confirm("¿Eliminar producto?")) {
                     await window.api.deleteDoc(window.api.doc(window.db, "productos", id));
                 }
             };
 
-            const filtrados = categoria === "Todos" ? productos : productos.filter(p => p.categoria === categoria);
+            const listaFiltrada = filtro === "Todos" ? productos : productos.filter(p => p.categoria === filtro);
 
             return (
-                <div className="min-h-screen pb-20">
-                    
-                    {/* NAVBAR FLOTANTE */}
-                    <nav className="fixed top-0 w-full z-50 glass border-b-0 px-6 py-4 flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-black">C</div>
-                            <div>
-                                <h1 className="text-xl font-bold tracking-tight leading-none">COLKA</h1>
-                                <span className="text-[9px] text-blue-400 font-bold tracking-[0.3em] uppercase">Inversiones</span>
-                            </div>
+                <div className="pb-20">
+                    {/* NAVBAR */}
+                    <nav className="fixed top-0 w-full z-40 bg-black/90 backdrop-blur border-b border-zinc-900 px-6 py-4 flex justify-between items-center">
+                        <div>
+                            <h1 className="text-xl font-black tracking-tighter italic">COLKA</h1>
+                            <p className="text-[9px] text-blue-500 font-bold uppercase tracking-widest">Inversiones</p>
                         </div>
                         <button 
                             onClick={() => admin ? setAdmin(false) : setShowLogin(true)}
-                            className={`px-4 py-2 rounded-full text-xs font-bold uppercase transition-all ${admin ? 'bg-red-500 text-white' : 'bg-white/10 hover:bg-white/20'}`}
+                            className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase ${admin ? 'bg-red-600' : 'bg-zinc-800'}`}
                         >
-                            {admin ? "Salir Admin" : "Acceso Staff"}
+                            {admin ? "Cerrar Sesión" : "Admin Acceso"}
                         </button>
                     </nav>
 
-                    {/* HERO BANNER IMPACTANTE */}
-                    <header className="relative pt-40 pb-20 px-6 hero-gradient flex flex-col items-center text-center overflow-hidden">
-                        <div className="absolute top-0 w-full h-full opacity-30 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                        
-                        <span className="inline-block px-4 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-6 animate-pulse">
-                            Tienda Oficial • Colcabamba
-                        </span>
-                        
-                        <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter" data-aos="fade-up">
-                            Tecnología <br/> <span className="text-gradient">Sin Límites</span>
-                        </h1>
-                        
-                        <p className="text-gray-400 max-w-lg mb-10 text-sm md:text-base leading-relaxed" data-aos="fade-up" data-aos-delay="100">
-                            Encuentra los últimos modelos de smartphones y accesorios con garantía real. Somos tu socio tecnológico de confianza.
-                        </p>
-
-                        <div className="flex gap-4" data-aos="fade-up" data-aos-delay="200">
-                            <a href="#catalogo" className="bg-white text-black px-8 py-3 rounded-full font-bold text-xs uppercase hover:scale-105 transition-transform">
-                                Ver Catálogo
-                            </a>
-                            <a href="#contacto" className="glass px-8 py-3 rounded-full font-bold text-xs uppercase hover:bg-white/10 transition-colors">
-                                Contactar
-                            </a>
+                    {/* HERO BANNER */}
+                    <header className="mt-20 px-6 py-20 text-center bg-gradient-to-b from-blue-900/20 to-black">
+                        <span className="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] mb-4 inline-block">Tienda Oficial</span>
+                        <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter text-white">Tecnología <br/><span className="text-blue-600">Premium</span></h2>
+                        <p className="text-zinc-500 max-w-md mx-auto mb-8">Celulares de alta gama, accesorios originales y la mejor garantía de Colcabamba.</p>
+                        <div className="flex justify-center gap-4 text-xs font-bold uppercase text-zinc-400">
+                            <span className="flex items-center gap-2"><ShieldCheck size={16}/> Garantía</span>
+                            <span className="flex items-center gap-2"><MapPin size={16}/> Local Físico</span>
                         </div>
                     </header>
 
-                    {/* CARACTERÍSTICAS */}
-                    <div className="grid grid-cols-3 gap-4 px-6 -mt-10 relative z-10 max-w-4xl mx-auto mb-20">
-                        {[
-                            {icon: <ShieldCheck size={20}/>, t: "Garantía Real"},
-                            {icon: <Truck size={20}/>, t: "Stock Local"},
-                            {icon: <Smartphone size={20}/>, t: "Equipos Nuevos"}
-                        ].map((item, i) => (
-                            <div key={i} className="glass p-4 rounded-2xl flex flex-col items-center text-center gap-2 backdrop-blur-xl bg-black/50">
-                                <div className="text-blue-500">{item.icon}</div>
-                                <span className="text-[10px] font-bold uppercase text-gray-300">{item.t}</span>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* ZONA ADMIN (SOLO VISIBLE SI ESTÁS LOGUEADO) */}
+                    {/* PANEL DE GESTIÓN (SOLO ADMIN) */}
                     {admin && (
                         <div className="max-w-4xl mx-auto px-6 mb-20">
-                            <div className="bg-zinc-900 border border-blue-500/30 p-8 rounded-[2rem]">
-                                <h2 className="text-2xl font-bold mb-6 text-blue-500 flex items-center gap-2">
-                                    <Edit size={24}/> {productoEditando ? "Editar Producto" : "Nuevo Ingreso"}
-                                </h2>
-                                <form onSubmit={guardarProducto} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <input name="nombre" defaultValue={productoEditando?.nombre} placeholder="Nombre del Equipo (Ej: iPhone 15)" className="bg-black p-4 rounded-xl border border-zinc-800 text-sm focus:border-blue-500 outline-none" required />
-                                    <input name="precio" defaultValue={productoEditando?.precio} placeholder="Precio (S/)" type="number" className="bg-black p-4 rounded-xl border border-zinc-800 text-sm focus:border-blue-500 outline-none" required />
-                                    
-                                    <select name="categoria" defaultValue={productoEditando?.categoria || "Celulares"} className="bg-black p-4 rounded-xl border border-zinc-800 text-sm focus:border-blue-500 outline-none">
+                            <div className="glass p-8 rounded-3xl border border-blue-900/50">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-xl font-bold flex items-center gap-2 text-blue-400"><Edit size={20}/> {editando ? "Editar Producto" : "Nuevo Ingreso"}</h3>
+                                    {editando && <button onClick={() => setEditando(null)} className="text-xs text-red-500 underline">Cancelar edición</button>}
+                                </div>
+                                <form onSubmit={guardar} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <input name="nombre" defaultValue={editando?.nombre} placeholder="Nombre (Ej: iPhone 15)" className="input-dark p-4 rounded-xl" required />
+                                    <input name="precio" type="number" defaultValue={editando?.precio} placeholder="Precio (S/)" className="input-dark p-4 rounded-xl" required />
+                                    <select name="categoria" defaultValue={editando?.categoria || "Celulares"} className="input-dark p-4 rounded-xl">
                                         <option value="Celulares">Celulares</option>
                                         <option value="Audífonos">Audífonos</option>
                                         <option value="Cargadores">Cargadores</option>
-                                        <option value="Accesorios">Accesorios</option>
                                     </select>
-
-                                    <input name="stock" defaultValue={productoEditando?.stock} placeholder="Cantidad en Stock" type="number" className="bg-black p-4 rounded-xl border border-zinc-800 text-sm focus:border-blue-500 outline-none" />
-                                    
-                                    <textarea name="descripcion" defaultValue={productoEditando?.descripcion} placeholder="Detalles extra (Color, GB, Estado...)" className="bg-black p-4 rounded-xl border border-zinc-800 text-sm focus:border-blue-500 outline-none md:col-span-2" rows="2"></textarea>
-                                    
-                                    <button type="submit" className="bg-blue-600 text-white py-4 rounded-xl font-bold uppercase text-xs md:col-span-2 hover:bg-blue-500 transition-colors">
-                                        {productoEditando ? "Actualizar Producto" : "Guardar en Inventario"}
+                                    <input name="stock" type="number" defaultValue={editando?.stock} placeholder="Stock (Und)" className="input-dark p-4 rounded-xl" />
+                                    <button className="col-span-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold uppercase text-xs transition-colors">
+                                        {editando ? "Guardar Cambios" : "Publicar Producto"}
                                     </button>
-                                    
-                                    {productoEditando && (
-                                        <button type="button" onClick={() => setProductoEditando(null)} className="text-zinc-500 text-xs underline md:col-span-2 text-center">Cancelar Edición</button>
-                                    )}
                                 </form>
                             </div>
                         </div>
                     )}
 
-                    {/* CATÁLOGO */}
-                    <main id="catalogo" className="max-w-6xl mx-auto px-6">
-                        <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-6">
-                            <div>
-                                <h2 className="text-3xl font-black uppercase italic mb-2">Nuestro Catálogo</h2>
-                                <p className="text-zinc-500 text-sm">Explora nuestra colección seleccionada.</p>
-                            </div>
-                            
-                            {/* Filtros */}
-                            <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 no-scrollbar">
-                                {["Todos", "Celulares", "Audífonos", "Cargadores"].map(cat => (
-                                    <button 
-                                        key={cat} 
-                                        onClick={() => setCategoria(cat)}
-                                        className={`px-5 py-2 rounded-full text-[10px] font-bold uppercase transition-all whitespace-nowrap border ${categoria === cat ? 'bg-white text-black border-white' : 'bg-transparent text-zinc-500 border-zinc-800'}`}
-                                    >
-                                        {cat}
-                                    </button>
-                                ))}
-                            </div>
+                    {/* FILTROS Y CATÁLOGO */}
+                    <main className="max-w-6xl mx-auto px-6">
+                        <div className="flex gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar justify-center">
+                            {["Todos", "Celulares", "Audífonos", "Cargadores"].map(c => (
+                                <button key={c} onClick={() => setFiltro(c)} className={`px-6 py-2 rounded-full text-[10px] font-bold uppercase transition-all ${filtro === c ? 'bg-white text-black' : 'bg-zinc-900 text-zinc-500'}`}>
+                                    {c}
+                                </button>
+                            ))}
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filtrados.map(p => (
-                                <div key={p.id} className="group bg-zinc-900/50 border border-zinc-800/50 p-6 rounded-[2rem] hover:border-zinc-700 transition-all hover:-translate-y-1" data-aos="fade-up">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {listaFiltrada.map(p => (
+                                <div key={p.id} className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-[2rem] hover:border-zinc-600 transition-all group">
                                     <div className="flex justify-between items-start mb-4">
-                                        <span className="text-[9px] font-bold text-blue-500 bg-blue-500/10 px-3 py-1 rounded-full uppercase tracking-wider">{p.categoria}</span>
+                                        <span className="bg-zinc-800 text-[9px] font-bold px-3 py-1 rounded-full uppercase text-zinc-400">{p.categoria}</span>
                                         {admin && (
                                             <div className="flex gap-2">
-                                                <button onClick={() => setProductoEditando(p)} className="text-zinc-500 hover:text-white"><Edit size={16}/></button>
-                                                <button onClick={() => eliminarProducto(p.id)} className="text-zinc-500 hover:text-red-500"><Trash2 size={16}/></button>
+                                                <button onClick={() => setEditando(p)} className="bg-blue-600/20 text-blue-500 p-2 rounded-lg hover:bg-blue-600 hover:text-white"><Edit size={14}/></button>
+                                                <button onClick={() => borrar(p.id)} className="bg-red-600/20 text-red-500 p-2 rounded-lg hover:bg-red-600 hover:text-white"><Trash2 size={14}/></button>
                                             </div>
                                         )}
                                     </div>
-                                    
-                                    <div className="h-32 flex items-center justify-center mb-6 bg-black/30 rounded-2xl relative overflow-hidden group-hover:bg-black/50 transition-colors">
-                                        <Smartphone size={48} className="text-zinc-700 group-hover:text-zinc-500 transition-colors" />
-                                        {/* Aquí podrías poner <img src={p.imagen} /> si tuvieras fotos */}
+                                    <div className="h-40 flex items-center justify-center bg-black/40 rounded-2xl mb-6">
+                                        <Smartphone size={48} className="text-zinc-700 group-hover:text-blue-500 transition-colors"/>
                                     </div>
-
-                                    <h3 className="text-xl font-bold mb-1 leading-tight">{p.nombre}</h3>
-                                    <p className="text-xs text-zinc-500 mb-4 line-clamp-2">{p.descripcion || "Equipo original con garantía."}</p>
-                                    
-                                    <div className="flex items-end justify-between border-t border-zinc-800 pt-4">
-                                        <div>
-                                            <p className="text-[9px] text-zinc-500 uppercase font-bold">Precio Contado</p>
-                                            <p className="text-2xl font-black text-white">S/ {p.precio}</p>
-                                        </div>
+                                    <h3 className="text-xl font-bold mb-1">{p.nombre}</h3>
+                                    <p className="text-xs text-zinc-500 mb-6">Stock disponible: {p.stock || 0}</p>
+                                    <div className="flex items-center justify-between border-t border-zinc-800 pt-4">
+                                        <span className="text-2xl font-black text-white">S/ {p.precio}</span>
                                         <button 
-                                            onClick={() => window.open(`https://wa.me/51983200830?text=Hola Inversiones COLKA, estoy interesado en el ${p.nombre} (Precio: S/ ${p.precio}). ¿Está disponible?`)}
-                                            className="bg-white text-black p-3 rounded-xl hover:bg-blue-500 hover:text-white transition-all"
+                                            onClick={() => window.open(`https://wa.me/51983200830?text=Hola, quiero comprar el ${p.nombre}`)}
+                                            className="bg-white text-black p-3 rounded-xl hover:scale-105 transition-transform"
                                         >
-                                            <ShoppingCart size={20} />
+                                            <ShoppingCart size={20}/>
                                         </button>
                                     </div>
                                 </div>
@@ -289,66 +203,22 @@
                         </div>
                     </main>
 
-                    {/* CONTACTO & TESTIMONIOS */}
-                    <footer id="contacto" className="mt-32 border-t border-zinc-900 bg-black pt-20 px-6">
-                        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 mb-20">
-                            <div>
-                                <h3 className="text-3xl font-black italic uppercase mb-8">Visítanos</h3>
-                                <div className="space-y-6">
-                                    <div className="flex gap-4">
-                                        <div className="w-12 h-12 glass rounded-full flex items-center justify-center text-blue-500 shrink-0"><MapPin /></div>
-                                        <div>
-                                            <h4 className="font-bold">Colcabamba, Tayacaja</h4>
-                                            <p className="text-zinc-500 text-sm">Av. Centenario (Ref. Plaza Principal)</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-4">
-                                        <div className="w-12 h-12 glass rounded-full flex items-center justify-center text-green-500 shrink-0"><Phone /></div>
-                                        <div>
-                                            <h4 className="font-bold">Pedidos WhatsApp</h4>
-                                            <p className="text-zinc-500 text-sm">983 200 830</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 className="text-3xl font-black italic uppercase mb-8">Clientes Felices</h3>
-                                <div className="glass p-6 rounded-3xl relative">
-                                    <div className="flex gap-1 text-yellow-500 mb-4">
-                                        <Star fill="currentColor" size={16}/><Star fill="currentColor" size={16}/><Star fill="currentColor" size={16}/><Star fill="currentColor" size={16}/><Star fill="currentColor" size={16}/>
-                                    </div>
-                                    <p className="text-zinc-400 text-sm italic mb-4">"Compré mi iPhone aquí y la atención fue de primera. Me ayudaron a configurarlo y me dieron garantía. Recomendado 100% en Colcabamba."</p>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 bg-zinc-700 rounded-full flex items-center justify-center font-bold text-xs">JP</div>
-                                        <span className="font-bold text-xs">Juan Perez</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="text-center pb-10 pt-10 border-t border-zinc-900">
-                            <p className="text-[10px] font-bold uppercase text-zinc-600 tracking-[0.4em]">© 2026 Inversiones Colka</p>
-                        </div>
-                    </footer>
-
                     {/* MODAL LOGIN */}
                     {showLogin && (
-                        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
+                        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-6">
                             <div className="bg-zinc-900 p-8 rounded-3xl w-full max-w-sm border border-zinc-800">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h3 className="font-bold text-xl">Acceso Admin</h3>
+                                <div className="flex justify-between items-center mb-8">
+                                    <h3 className="font-bold text-xl flex items-center gap-2"><Lock size={20}/> Seguridad</h3>
                                     <button onClick={() => setShowLogin(false)}><X size={20}/></button>
                                 </div>
                                 <input 
                                     type="password" 
-                                    placeholder="Contraseña" 
-                                    className="w-full bg-black p-4 rounded-xl border border-zinc-800 text-white mb-4 focus:border-blue-500 outline-none"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Contraseña del sistema" 
+                                    className="w-full input-dark p-4 rounded-xl mb-4 text-center tracking-widest"
+                                    value={pass}
+                                    onChange={(e) => setPass(e.target.value)}
                                 />
-                                <button onClick={handleLogin} className="w-full bg-blue-600 py-3 rounded-xl font-bold uppercase text-xs">Ingresar</button>
-                                <p className="text-center text-[10px] text-zinc-600 mt-4 uppercase tracking-widest">Solo personal autorizado</p>
+                                <button onClick={ingresar} className="w-full bg-blue-600 py-4 rounded-xl font-bold uppercase text-xs">Acceder</button>
                             </div>
                         </div>
                     )}
