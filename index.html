@@ -1,119 +1,12 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INVERSIONES COLKA | Sistema Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap');
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-image: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), url('https://i.postimg.cc/jjP5tMDG/Gemini-Generated-Image-6rxotv6rxotv6rxo-removebg-preview.png');
-            background-attachment: fixed; background-position: center; background-repeat: no-repeat;
-        }
-    </style>
+    <title>PRUEBA COLKA</title>
 </head>
-<body>
-    <div id="root"></div>
-
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        const { ShoppingCart, ShoppingBag, Search, Plus, X, MapPin, Phone, Star } = lucide;
-
-        // Datos locales inmediatos para evitar pantalla blanca
-        const DATA = [
-            { id: 1, name: 'iPhone 13 Pro', price: '3200', cat: 'Celulares', img: 'https://images.unsplash.com/photo-1632661674596-df8be070a5c5?w=200' },
-            { id: 2, name: 'MacBook Air M1', price: '3800', cat: 'Laptops', img: 'https://images.unsplash.com/photo-1611186871348-648470d23830?w=200' },
-            { id: 3, name: 'AirPods Pro', price: '850', cat: 'Accesorios', img: 'https://images.unsplash.com/photo-1588423771073-b8903fbb85b5?w=200' }
-        ];
-
-        function App() {
-            const [cart, setCart] = useState([]);
-            const [isCartOpen, setIsCartOpen] = useState(false);
-
-            const addToCart = (p) => {
-                setCart([...cart, p]);
-                setIsCartOpen(true);
-            };
-
-            const total = cart.reduce((acc, i) => acc + parseFloat(i.price), 0);
-
-            return (
-                <div className="min-h-screen">
-                    <nav className="fixed w-full z-50 bg-white/90 backdrop-blur border-b-2 border-black h-20 flex items-center px-6 justify-between">
-                        <div className="flex items-center gap-2">
-                            <img src="https://i.postimg.cc/jjP5tMDG/Gemini-Generated-Image-6rxotv6rxotv6rxo-removebg-preview.png" className="h-12" />
-                            <h1 className="text-2xl font-black">COLKA</h1>
-                        </div>
-                        <button onClick={() => setIsCartOpen(true)} className="relative bg-black text-white p-3 rounded-xl">
-                            <ShoppingCart />
-                            {cart.length > 0 && <span className="absolute -top-2 -right-2 bg-red-600 w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold">{cart.length}</span>}
-                        </button>
-                    </nav>
-
-                    <div className="pt-32 pb-20 px-4 max-w-7xl mx-auto">
-                        <div className="text-center mb-16">
-                            <h2 className="text-6xl font-black italic uppercase tracking-tighter mb-4">Inversiones COLKA</h2>
-                            <p className="text-slate-500 text-xl">Calidad certificada por Julio Valladolid</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {DATA.map(p => (
-                                <div key={p.id} className="bg-white border-2 border-slate-100 p-6 rounded-[2.5rem] shadow-xl hover:scale-105 transition-transform">
-                                    <img src={p.img} className="w-full h-48 object-contain mb-6" />
-                                    <h3 className="text-2xl font-black mb-2">{p.name}</h3>
-                                    <p className="text-blue-600 font-bold text-xs uppercase mb-4">{p.cat}</p>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-3xl font-black text-slate-900">S/ {p.price}</span>
-                                        <button onClick={() => addToCart(p)} className="bg-black text-white p-4 rounded-full hover:bg-blue-600 transition-colors">
-                                            <Plus />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {isCartOpen && (
-                        <div className="fixed inset-0 z-[100] flex justify-end">
-                            <div className="absolute inset-0 bg-black/50" onClick={() => setIsCartOpen(false)}></div>
-                            <div className="relative w-full max-w-md bg-white h-full p-8 flex flex-col">
-                                <div className="flex justify-between items-center mb-8">
-                                    <h3 className="text-3xl font-black italic">Tu Pedido</h3>
-                                    <button onClick={() => setIsCartOpen(false)}><X size={32}/></button>
-                                </div>
-                                <div className="flex-1 overflow-y-auto space-y-4">
-                                    {cart.map((item, i) => (
-                                        <div key={i} className="flex gap-4 items-center bg-slate-50 p-4 rounded-2xl border">
-                                            <img src={item.img} className="w-16 h-16 object-contain" />
-                                            <div className="flex-1">
-                                                <h4 className="font-bold">{item.name}</h4>
-                                                <span className="font-black text-blue-600">S/ {item.price}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="pt-6 border-t mt-6">
-                                    <div className="flex justify-between text-2xl font-black mb-6">
-                                        <span>TOTAL</span>
-                                        <span>S/ {total.toFixed(2)}</span>
-                                    </div>
-                                    <button onClick={() => window.open(`https://wa.me/51910457625?text=Hola Julio, quiero hacer un pedido de S/ ${total}`)} className="w-full bg-green-500 text-white py-5 rounded-2xl font-black text-xl shadow-lg">PEDIR POR WHATSAPP</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
-        }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+<body style="background: black; color: yellow; text-align: center; padding-top: 50px; font-family: sans-serif;">
+    <img src="https://i.postimg.cc/jjP5tMDG/Gemini-Generated-Image-6rxotv6rxotv6rxo-removebg-preview.png" style="width: 200px;">
+    <h1>SISTEMA COLKA - PRUEBA DE CONEXIÓN</h1>
+    <p>Si puedes ver este mensaje en amarillo, GitHub está funcionando correctamente.</p>
+    <p>Julio, refresca la página con <b>Ctrl + F5</b> para limpiar la memoria.</p>
 </body>
 </html>
