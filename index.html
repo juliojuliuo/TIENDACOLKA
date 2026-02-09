@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inversiones COLKA | Tienda Oficial</title>
+    <title>Inversiones COLKA | Tecnología & Garantía</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #000000; color: white; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #000; color: #fff; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
@@ -19,7 +20,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBcOlkenlK-ATzMg7LG12kukr7l1gPJZfY",
@@ -29,73 +30,136 @@
             messagingSenderId: "760185289386",
             appId: "1:760185289386:web:b7f0b49334b04efd40aed3"
         };
-
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
-        window.api = { collection, addDoc, onSnapshot };
+        window.api = { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc };
     </script>
 
     <script type="text/babel">
         function App() {
             const [productos, setProductos] = React.useState([]);
-            const [cargando, setCargando] = React.useState(true);
+            const [categoriaActiva, setCategoriaActiva] = React.useState("Todos");
+            const [admin, setAdmin] = React.useState(false);
+
+            const categorias = ["Todos", "Celulares", "Cargadores", "Audífonos", "Accesorios"];
 
             React.useEffect(() => {
-                // Esperamos un momento a que Firebase conecte
                 const interval = setInterval(() => {
                     if (window.api) {
                         clearInterval(interval);
-                        const { collection, onSnapshot } = window.api;
-                        onSnapshot(collection(window.db, "productos"), (snap) => {
+                        window.api.onSnapshot(window.api.collection(window.db, "productos"), (snap) => {
                             setProductos(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-                            setCargando(false);
                         });
                     }
                 }, 500);
             }, []);
 
-            const nuevoProducto = async () => {
-                const nombre = prompt("Nombre del Celular o Accesorio:");
+            const gestionarProducto = async () => {
+                const nombre = prompt("Nombre del producto:");
                 const precio = prompt("Precio (S/):");
+                const cat = prompt("Categoría (Celulares, Cargadores, Audífonos, Accesorios):");
+                const stock = prompt("Cantidad en Stock:");
                 if (nombre && precio) {
-                    await window.api.addDoc(window.api.collection(window.db, "productos"), { nombre, precio });
+                    await window.api.addDoc(window.api.collection(window.db, "productos"), { 
+                        nombre, precio, categoria: cat, stock: stock || 0 
+                    });
                 }
             };
 
-            return (
-                <div className="p-6 max-w-4xl mx-auto">
-                    <header className="flex justify-between items-center mb-12 border-b border-zinc-800 pb-6">
-                        <h1 className="text-4xl font-black italic uppercase tracking-tighter">Inversiones COLKA</h1>
-                        <button onClick={nuevoProducto} className="bg-white text-black px-4 py-2 rounded-lg font-bold text-xs uppercase">
-                            + Agregar
-                        </button>
-                    </header>
+            const productosFiltrados = categoriaActiva === "Todos" 
+                ? productos 
+                : productos.filter(p => p.categoria === categoriaActiva);
 
-                    {cargando ? (
-                        <p className="text-center text-zinc-500 animate-pulse">CONECTANDO A LA BASE DE DATOS...</p>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {productos.map(p => (
-                                <div key={p.id} className="bg-zinc-900 p-6 rounded-3xl border border-zinc-800">
-                                    <h3 className="text-xl font-bold uppercase">{p.nombre}</h3>
-                                    <p className="text-3xl font-black text-blue-500 mt-2">S/ {p.precio}</p>
+            return (
+                <div className="min-h-screen flex flex-col">
+                    {/* Header Principal */}
+                    <nav className="p-6 border-b border-zinc-900 sticky top-0 bg-black/80 backdrop-blur-md z-50 flex justify-between items-center">
+                        <div>
+                            <h1 className="text-2xl font-black tracking-tighter italic uppercase">Inversiones COLKA</h1>
+                            <p className="text-[9px] text-blue-500 font-bold tracking-[0.3em] uppercase">Colcabamba - Tayacaja</p>
+                        </div>
+                        <button onClick={() => setAdmin(!admin)} className="bg-zinc-900 px-4 py-2 rounded-xl text-[10px] font-bold uppercase border border-zinc-800">
+                            {admin ? "Ver Tienda" : "Admin Panel"}
+                        </button>
+                    </nav>
+
+                    {/* Categorías en pantalla principal */}
+                    <div className="flex gap-2 overflow-x-auto p-6 no-scrollbar">
+                        {categorias.map(cat => (
+                            <button 
+                                key={cat}
+                                onClick={() => setCategoriaActiva(cat)}
+                                className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${categoriaActiva === cat ? 'bg-blue-600 text-white' : 'bg-zinc-900 text-zinc-500'}`}
+                            >
+                                {cat}
+                            </button>
+                        ))}
+                    </div>
+
+                    <main className="p-6 flex-1">
+                        {admin && (
+                            <div className="mb-10 p-6 bg-blue-600/10 border border-blue-600/30 rounded-[2rem] flex justify-between items-center">
+                                <h2 className="font-black uppercase italic">Gestión de Inventario</h2>
+                                <button onClick={gestionarProducto} className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold text-[10px] uppercase">Nuevo Producto</button>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {productosFiltrados.map(p => (
+                                <div key={p.id} className="bg-zinc-900 border border-zinc-800 p-8 rounded-[2.5rem] relative group">
+                                    <span className="absolute top-6 right-6 text-[9px] font-black text-zinc-500 uppercase tracking-widest">{p.categoria}</span>
+                                    <h3 className="text-2xl font-black italic uppercase leading-none mb-2">{p.nombre}</h3>
+                                    <p className="text-3xl font-black text-blue-500 mb-6">S/ {p.precio}</p>
+                                    
+                                    <div className="flex justify-between items-center mb-6">
+                                        <div className="bg-zinc-800 px-3 py-1 rounded-lg">
+                                            <p className="text-[9px] font-bold text-zinc-500 uppercase">Stock disponible</p>
+                                            <p className="font-black text-sm">{p.stock || 0} unidades</p>
+                                        </div>
+                                    </div>
+
                                     <button 
-                                        onClick={() => window.open(`https://wa.me/51983200830?text=Hola, quiero el ${p.nombre}`)}
-                                        className="w-full mt-4 bg-zinc-800 py-3 rounded-xl font-bold text-xs uppercase hover:bg-white hover:text-black transition-all"
+                                        onClick={() => window.open(`https://wa.me/51983200830?text=Hola, me interesa el ${p.nombre} de S/ ${p.precio}`)}
+                                        className="w-full bg-white text-black py-4 rounded-2xl font-black uppercase text-xs hover:bg-blue-600 hover:text-white transition-all"
                                     >
-                                        Pedir por WhatsApp
+                                        Comprar ahora
                                     </button>
+                                    
+                                    {admin && (
+                                        <button onClick={() => window.api.deleteDoc(window.api.doc(window.db, "productos", p.id))} className="mt-4 text-red-500 text-[9px] font-bold uppercase block mx-auto">Eliminar</button>
+                                    )}
                                 </div>
                             ))}
                         </div>
-                    )}
-                    {!cargando && productos.length === 0 && (
-                        <p className="text-center text-zinc-600 mt-20">No hay productos. Usa el botón "AGREGAR" arriba.</p>
-                    )}
+                    </main>
+
+                    {/* Información de la Empresa & Contacto */}
+                    <footer className="bg-zinc-950 p-10 mt-20 border-t border-zinc-900">
+                        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
+                            <div>
+                                <h3 className="text-xl font-black italic uppercase mb-4">Sobre Inversiones COLKA</h3>
+                                <p className="text-zinc-500 text-sm leading-relaxed mb-6">Somos líderes en tecnología en Colcabamba. Ofrecemos equipos originales con garantía real y soporte técnico especializado.</p>
+                                <div className="space-y-2 text-xs font-bold uppercase text-zinc-400">
+                                    <p>📍 Av. Centenario, Colcabamba</p>
+                                    <p>📞 983200830</p>
+                                    <p>⏰ Lun - Sab: 8am - 8pm</p>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-black italic uppercase mb-4">Comentarios de Clientes</h3>
+                                <div className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 italic text-zinc-400 text-xs">
+                                    "Excelente atención y los mejores precios en celulares de alta gama. Muy recomendado."
+                                    <p className="mt-2 text-blue-500 font-black">— Cliente Verificado</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-center mt-20 opacity-20 text-[9px] font-bold uppercase tracking-[0.5em]">
+                            © 2026 Inversiones COLKA PRO
+                        </div>
+                    </footer>
                 </div>
             );
         }
-
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
