@@ -2,21 +2,27 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Inversiones COLKA</title>
+    <title>Inversiones COLKA | Tienda de Tecnología</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Inter:wght@400;700;900&display=swap');
+        .logo-font { font-family: 'Orbitron', sans-serif; }
+        body { font-family: 'Inter', sans-serif; background-color: #000000; }
+        .gradient-border {
+            background: linear-gradient(to right, #3b82f6, #06b6d4);
+            height: 4px;
+            width: 100%;
+        }
+    </style>
 </head>
-<body class="bg-black text-white font-sans">
+<body class="text-white">
+    <div class="gradient-border"></div>
     <div id="root"></div>
 
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Tus datos reales que vimos en la imagen
         const firebaseConfig = {
             apiKey: "AIzaSyBcOlkenlK-ATzMg7LG12kukr7l1gPJZfY",
             authDomain: "inversiones-colka.firebaseapp.com",
@@ -27,8 +33,12 @@
         };
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
-        window.dbFunctions = { collection, addDoc, onSnapshot };
+        window.dbFunctions = { collection, addDoc, onSnapshot, query };
     </script>
+
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <script type="text/babel">
         function App() {
@@ -36,9 +46,8 @@
             const [cargando, setCargando] = React.useState(true);
 
             React.useEffect(() => {
-                // Esperamos un segundo a que conecte con Firebase
                 setTimeout(() => {
-                    const { collection, onSnapshot } = window.dbFunctions;
+                    const { collection, onSnapshot, query } = window.dbFunctions;
                     const unsub = onSnapshot(collection(window.db, "productos"), (snap) => {
                         setProductos(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
                         setCargando(false);
@@ -48,55 +57,24 @@
             }, []);
 
             const agregarProducto = async () => {
-                const nombre = prompt("Nombre del equipo (ej: iPhone 15):");
-                const precio = prompt("Precio en Soles (S/):");
+                const nombre = prompt("Nombre del equipo:");
+                const precio = prompt("Precio normal (S/):");
+                const oferta = confirm("¿Es una oferta especial?");
                 if (nombre && precio) {
                     const { collection, addDoc } = window.dbFunctions;
-                    await addDoc(collection(window.db, "productos"), { nombre, precio });
-                    alert("¡Producto agregado con éxito!");
+                    await addDoc(collection(window.db, "productos"), { 
+                        nombre, 
+                        precio, 
+                        esOferta: oferta 
+                    });
                 }
             };
 
-            return (
-                <div className="p-8 max-w-5xl mx-auto">
-                    <header className="flex justify-between items-center mb-12 border-b border-zinc-800 pb-8">
-                        <div>
-                            <span className="text-blue-500 text-[10px] font-bold uppercase tracking-widest">Inversiones</span>
-                            <h1 className="text-5xl font-black italic uppercase tracking-tighter">COLKA</h1>
-                        </div>
-                        <button onClick={agregarProducto} className="bg-white text-black px-6 py-3 rounded-2xl font-black uppercase text-[10px] hover:bg-blue-500 transition-colors">
-                            + Agregar Producto
-                        </button>
-                    </header>
+            const ofertas = productos.filter(p => p.esOferta);
 
-                    {cargando ? (
-                        <p className="text-zinc-500 animate-pulse uppercase font-bold tracking-widest text-xs text-center mt-20">Conectando con la base de datos...</p>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {productos.map(p => (
-                                <div key={p.id} className="bg-zinc-900 border border-zinc-800 p-8 rounded-[3rem] hover:border-blue-500 transition-all">
-                                    <h3 className="text-3xl font-black italic uppercase leading-none mb-4">{p.nombre}</h3>
-                                    <p className="text-4xl font-black text-blue-500 italic mb-8">S/ {p.precio}</p>
-                                    <button 
-                                        onClick={() => window.open(`https://wa.me/51983200830?text=Hola, me interesa el ${p.nombre}`)}
-                                        className="w-full bg-white text-black py-4 rounded-2xl font-black uppercase text-xs"
-                                    >
-                                        Pedir por WhatsApp
-                                    </button>
-                                </div>
-                            ))}
-                            {productos.length === 0 && (
-                                <div className="col-span-full py-20 text-center border-2 border-dashed border-zinc-800 rounded-[3rem]">
-                                    <p className="text-zinc-500 font-bold uppercase tracking-widest">La tienda está vacía. <br/> Usa el botón de arriba para subir tu primer celular.</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            );
-        }
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
+            return (
+                <div className="p-4 md:p-10 max-w-6xl mx-auto">
+                    {/* LOGOTIPO */}
+                    <header className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6">
+                        <div className="text-center md:text-left">
+                            <div className="flex items-center gap-2 justify-center md:justify
