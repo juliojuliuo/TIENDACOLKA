@@ -12,6 +12,9 @@
         @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
         .animate-pop { animation: pop 0.3s ease-in-out; }
         html { scroll-behavior: smooth; }
+        
+        /* Efecto de imagen para productos agotados */
+        .agotado-img { filter: grayscale(100%) opacity(60%); }
     </style>
 </head>
 <body>
@@ -49,7 +52,16 @@
         </div>
     </div>
 
-    <div class="pt-6 px-6 max-w-4xl mx-auto" id="buscador-section">
+    <section id="seccion-destacados" class="max-w-6xl mx-auto px-6 pt-12 hidden">
+        <h3 class="text-2xl font-black italic uppercase text-white mb-6 flex items-center gap-2 border-b border-zinc-800 pb-4">
+            <span class="text-3xl">🔥</span> Top Inversiones Colka
+        </h3>
+        <div id="contenedor-destacados" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            </div>
+    </section>
+
+    <div class="pt-16 px-6 max-w-4xl mx-auto" id="buscador-section">
+        <h3 class="text-xl font-black italic uppercase text-center text-zinc-500 mb-4">Catálogo Completo</h3>
         <div class="relative shadow-lg">
             <input type="text" id="buscador" oninput="buscarProducto()" 
                    placeholder="Buscar productos, marcas o características..." 
@@ -65,11 +77,10 @@
 
     <div id="panel-admin" class="hidden p-6 max-w-4xl mx-auto">
         <div class="glass p-8 rounded-[2.5rem] border-blue-500/50 relative">
-            
             <h3 id="admin-titulo" class="text-xl font-bold mb-6 text-blue-500 italic uppercase">AGREGAR NUEVO PRODUCTO</h3>
             <input type="hidden" id="edit-id">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-black">
-                <input id="p-nombre" placeholder="Nombre del Equipo (Ej: Samsung Galaxy A54)" class="p-4 rounded-xl text-sm outline-none w-full border border-transparent focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                <input id="p-nombre" placeholder="Nombre del Equipo (Ej: Samsung Galaxy A54)" class="p-4 rounded-xl text-sm outline-none w-full border border-transparent focus:border-blue-500">
                 <input id="p-precio" placeholder="Precio (S/)" type="number" class="p-4 rounded-xl text-sm outline-none w-full border border-transparent focus:border-blue-500">
                 
                 <input id="p-cat" list="sugerencias-cat" placeholder="Categoría (Ej: Celulares, Fundas...)" class="p-4 rounded-xl text-sm outline-none w-full border border-transparent focus:border-blue-500">
@@ -81,8 +92,16 @@
                     <option value="Parlantes">
                 </datalist>
 
-                <input id="p-stock" placeholder="Stock disponible" type="number" class="p-4 rounded-xl text-sm outline-none w-full border border-transparent focus:border-blue-500">
-                <input id="p-imagen" placeholder="URL directa de la foto (.jpg o .png)" class="md:col-span-2 p-4 rounded-xl text-sm outline-none w-full border border-transparent focus:border-blue-500">
+                <select id="p-etiqueta" class="p-4 rounded-xl text-sm outline-none w-full border border-transparent focus:border-blue-500 text-zinc-600 font-bold">
+                    <option value="">Normal (Sin etiqueta)</option>
+                    <option value="Oferta">🔥 EN OFERTA</option>
+                    <option value="Destacado">⭐ DESTACADO</option>
+                    <option value="Más Vendido">🏆 MÁS VENDIDO</option>
+                </select>
+
+                <input id="p-stock" placeholder="Stock disponible (Pon 0 para Agotado)" type="number" class="p-4 rounded-xl text-sm outline-none w-full border border-transparent focus:border-blue-500">
+                <input id="p-imagen" placeholder="URL directa de la foto (.jpg o .png)" class="p-4 rounded-xl text-sm outline-none w-full border border-transparent focus:border-blue-500">
+                
                 <textarea id="p-desc" placeholder="Descripción detallada y características completas del producto..." class="md:col-span-2 p-4 rounded-xl text-sm outline-none w-full h-32 resize-none border border-transparent focus:border-blue-500"></textarea>
                 
                 <button onclick="guardarProducto()" class="md:col-span-2 bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-xs hover:bg-blue-500 transition-all">Guardar Cambios</button>
@@ -121,32 +140,25 @@
 
     <div id="modal-producto" class="fixed inset-0 bg-black/95 hidden z-[110] flex items-center justify-center p-4 backdrop-blur-md transition-all">
         <div class="glass max-w-4xl w-full rounded-[2rem] border-zinc-800 overflow-hidden relative flex flex-col md:flex-row max-h-[90vh]">
-            
             <button onclick="cerrarProducto()" class="absolute top-4 right-4 bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center font-black hover:bg-red-600 z-50 transition-all border border-zinc-700">✕</button>
-            
             <div class="w-full md:w-1/2 bg-zinc-950 min-h-[300px] relative flex items-center justify-center p-6 border-b md:border-b-0 md:border-r border-zinc-800">
                 <img id="detalle-img" src="" class="max-w-full max-h-[400px] object-contain rounded-xl drop-shadow-2xl">
             </div>
-            
             <div class="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-between bg-black overflow-y-auto no-scrollbar">
                 <div>
                     <span id="detalle-cat" class="text-[10px] font-black text-blue-500 uppercase tracking-widest block mb-2"></span>
                     <h3 id="detalle-nombre" class="text-2xl md:text-3xl font-black italic uppercase leading-tight mb-6 text-white"></h3>
-                    
                     <div class="mb-8">
                         <h4 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 border-b border-zinc-800 pb-2">Características y Descripción</h4>
                         <p id="detalle-desc" class="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed"></p>
                     </div>
                 </div>
-                
                 <div class="mt-4">
                     <p class="text-4xl font-black text-white mb-6">S/ <span id="detalle-precio"></span></p>
-                    
                     <div class="bg-zinc-900 p-4 rounded-xl mb-4 flex justify-between items-center border border-zinc-800">
                         <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Stock Disponible</span>
                         <span id="detalle-stock" class="font-black text-sm text-white"></span>
                     </div>
-                    
                     <button id="btn-detalle-carrito" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-xs hover:bg-blue-500 transition-all flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.4)]">
                         Añadir al Carrito
                     </button>
@@ -203,7 +215,7 @@
         let esAdmin = false; 
         let carrito = [];
 
-        // --- FUNCIONES DEL CARRITO ---
+        // --- CARRITO ---
         window.abrirCarrito = () => document.getElementById('modal-carrito').classList.remove('hidden');
         window.cerrarCarrito = () => document.getElementById('modal-carrito').classList.add('hidden');
 
@@ -218,15 +230,10 @@
             } else { carrito.push({ ...producto, cantidad: 1 }); }
             actualizarInterfazCarrito();
             const badge = document.getElementById('badge-carrito');
-            badge.classList.remove('animate-pop');
-            void badge.offsetWidth; 
-            badge.classList.add('animate-pop');
+            badge.classList.remove('animate-pop'); void badge.offsetWidth; badge.classList.add('animate-pop');
         };
 
-        window.quitarDelCarrito = (id) => {
-            carrito = carrito.filter(item => item.id !== id);
-            actualizarInterfazCarrito();
-        };
+        window.quitarDelCarrito = (id) => { carrito = carrito.filter(item => item.id !== id); actualizarInterfazCarrito(); };
 
         window.modificarCantidad = (id, cambio) => {
             const item = carrito.find(i => i.id === id);
@@ -249,12 +256,10 @@
                 contenedor.innerHTML = `<p class="text-center text-zinc-600 mt-20 text-sm font-bold uppercase">Tu carrito está vacío</p>`;
             } else {
                 carrito.forEach(item => {
-                    total += (item.precio * item.cantidad);
-                    totalItems += item.cantidad;
-                    const imgPlaceholder = item.imagen || "https://via.placeholder.com/300x200.png?text=Sin+Foto";
+                    total += (item.precio * item.cantidad); totalItems += item.cantidad;
                     contenedor.innerHTML += `
                         <div class="flex items-center gap-4 bg-zinc-900 p-4 rounded-2xl border border-zinc-800 relative">
-                            <img src="${imgPlaceholder}" class="w-16 h-16 object-cover rounded-xl bg-black">
+                            <img src="${item.imagen || "https://via.placeholder.com/300"}" class="w-16 h-16 object-cover rounded-xl bg-black">
                             <div class="flex-1">
                                 <h4 class="text-sm font-bold text-white mb-1">${item.nombre}</h4>
                                 <p class="text-blue-500 font-black text-sm">S/ ${item.precio}</p>
@@ -268,8 +273,7 @@
                         </div>`;
                 });
             }
-            totalElemento.innerText = total.toFixed(2);
-            badge.innerText = totalItems;
+            totalElemento.innerText = total.toFixed(2); badge.innerText = totalItems;
         }
 
         window.enviarPedidoWhatsApp = () => {
@@ -288,59 +292,55 @@
             window.open(`https://wa.me/51983200830?text=${mensaje}`);
         };
 
-        // --- VISTA DETALLE PRODUCTO ---
+        // --- VISTA DETALLE ---
         window.abrirProducto = (id) => {
             const p = productosData.find(x => x.id === id);
             if(!p) return;
+            const stockVal = p.stock || 0;
             
-            document.getElementById('detalle-img').src = p.imagen || "https://via.placeholder.com/600x600.png?text=Sin+Foto";
+            document.getElementById('detalle-img').src = p.imagen || "https://via.placeholder.com/600";
             document.getElementById('detalle-cat').innerText = p.categoria || "Otros";
             document.getElementById('detalle-nombre').innerText = p.nombre;
-            document.getElementById('detalle-desc').innerText = p.descripcion || "No hay descripción detallada para este producto.";
+            document.getElementById('detalle-desc').innerText = p.descripcion || "Sin descripción.";
             document.getElementById('detalle-precio').innerText = p.precio;
             
-            const stockVal = p.stock || 0;
             const stockEl = document.getElementById('detalle-stock');
-            stockEl.innerText = stockVal + " Und.";
-            stockEl.className = stockVal <= 2 ? 'font-black text-sm text-red-500' : 'font-black text-sm text-white';
-            
-            document.getElementById('btn-detalle-carrito').onclick = () => {
-                agregarAlCarrito(p.id);
-                cerrarProducto();
-            };
-            
+            const btnCarrito = document.getElementById('btn-detalle-carrito');
+
+            if(stockVal <= 0) {
+                stockEl.innerText = "AGOTADO";
+                stockEl.className = 'font-black text-sm text-red-500';
+                btnCarrito.innerText = "Producto Agotado";
+                btnCarrito.className = "w-full bg-zinc-800 text-zinc-500 py-4 rounded-2xl font-black uppercase text-xs cursor-not-allowed";
+                btnCarrito.onclick = null;
+            } else {
+                stockEl.innerText = stockVal + " Und.";
+                stockEl.className = 'font-black text-sm text-green-400';
+                btnCarrito.innerText = "Añadir al Carrito";
+                btnCarrito.className = "w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-xs hover:bg-blue-500 transition-all flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.4)]";
+                btnCarrito.onclick = () => { agregarAlCarrito(p.id); cerrarProducto(); };
+            }
             document.getElementById('modal-producto').classList.remove('hidden');
         };
-
-        window.cerrarProducto = () => {
-            document.getElementById('modal-producto').classList.add('hidden');
-        };
+        window.cerrarProducto = () => document.getElementById('modal-producto').classList.add('hidden');
 
         // --- ADMIN ---
         window.validarAcceso = () => {
             if(document.getElementById('pass-admin').value === "hola123") {
-                esAdmin = true;
-                document.getElementById('modal-login').classList.add('hidden');
+                esAdmin = true; document.getElementById('modal-login').classList.add('hidden');
                 document.getElementById('panel-admin').classList.remove('hidden');
-                document.getElementById('pass-admin').value = ""; // Limpiar clave
-                render();
+                document.getElementById('pass-admin').value = ""; render();
             } else { alert("Clave Incorrecta"); }
         };
-
         window.cerrarAdmin = () => document.getElementById('panel-admin').classList.add('hidden');
-        
-        window.salirAdmin = () => {
-            esAdmin = false; // Quita permisos
-            cerrarAdmin(); // Oculta panel
-            render(); // Vuelve a dibujar sin botones
-            alert("Sesión de administrador cerrada exitosamente.");
-        };
+        window.salirAdmin = () => { esAdmin = false; cerrarAdmin(); render(); alert("Sesión cerrada."); };
 
         window.guardarProducto = async () => {
             const id = document.getElementById('edit-id').value;
             const nombre = document.getElementById('p-nombre').value;
             const precio = document.getElementById('p-precio').value;
             const cat = document.getElementById('p-cat').value || "Otros"; 
+            const etiqueta = document.getElementById('p-etiqueta').value; // Nueva etiqueta
             const stock = document.getElementById('p-stock').value;
             const imagen = document.getElementById('p-imagen').value;
             const desc = document.getElementById('p-desc').value;
@@ -348,18 +348,15 @@
             if(!nombre || !precio || !stock) return alert("Nombre, Precio y Stock son obligatorios");
 
             const data = {
-                nombre: nombre,
-                precio: parseFloat(precio),
+                nombre: nombre, precio: parseFloat(precio),
                 categoria: cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase(), 
-                stock: parseInt(stock),
-                imagen: imagen || "",
-                descripcion: desc || "",
-                timestamp: Date.now()
+                etiqueta: etiqueta, stock: parseInt(stock),
+                imagen: imagen || "", descripcion: desc || "", timestamp: Date.now()
             };
 
             try {
-                if(id) { await updateDoc(doc(db, "productos", id), data); alert("✅ Producto Modificado"); } 
-                else { await addDoc(collection(db, "productos"), data); alert("🚀 Producto Agregado"); }
+                if(id) { await updateDoc(doc(db, "productos", id), data); alert("✅ Modificado"); } 
+                else { await addDoc(collection(db, "productos"), data); alert("🚀 Agregado"); }
                 limpiarForm();
             } catch (e) { alert("Error: " + e.message); }
         };
@@ -370,58 +367,110 @@
             document.getElementById('p-nombre').value = p.nombre || '';
             document.getElementById('p-precio').value = p.precio || '';
             document.getElementById('p-cat').value = p.categoria || '';
+            document.getElementById('p-etiqueta').value = p.etiqueta || ''; // Carga etiqueta
             document.getElementById('p-stock').value = p.stock || 0;
             document.getElementById('p-imagen').value = p.imagen || "";
             document.getElementById('p-desc').value = p.descripcion || "";
             document.getElementById('admin-titulo').innerText = "EDITANDO: " + p.nombre;
-            document.getElementById('panel-admin').classList.remove('hidden'); // Asegura que el panel esté visible
-            window.scrollTo(0,0);
+            document.getElementById('panel-admin').classList.remove('hidden'); window.scrollTo(0,0);
         };
 
-        window.eliminarProd = async (id) => {
-            if(confirm("¿Seguro que quieres eliminar este producto?")) {
-                await deleteDoc(doc(db, "productos", id));
-            }
-        };
+        window.eliminarProd = async (id) => { if(confirm("¿Borrar producto?")) await deleteDoc(doc(db, "productos", id)); };
 
         function limpiarForm() {
-            document.getElementById('edit-id').value = '';
-            document.getElementById('p-nombre').value = '';
-            document.getElementById('p-precio').value = '';
-            document.getElementById('p-cat').value = '';
-            document.getElementById('p-stock').value = '';
-            document.getElementById('p-imagen').value = '';
-            document.getElementById('p-desc').value = '';
+            document.getElementById('edit-id').value = ''; document.getElementById('p-nombre').value = '';
+            document.getElementById('p-precio').value = ''; document.getElementById('p-cat').value = '';
+            document.getElementById('p-etiqueta').value = ''; document.getElementById('p-stock').value = '';
+            document.getElementById('p-imagen').value = ''; document.getElementById('p-desc').value = '';
             document.getElementById('admin-titulo').innerText = "AGREGAR NUEVO PRODUCTO";
         }
 
-        // --- RENDERIZADO Y FILTROS DINÁMICOS ---
+        // --- RENDERIZADO Y HTML ---
         function renderFiltros() {
             const cont = document.getElementById('contenedor-filtros');
             const categoriasUnicas = ["Todos", ...new Set(productosData.map(p => p.categoria || "Otros"))];
-            
             cont.innerHTML = '';
             categoriasUnicas.forEach(cat => {
                 const isSelected = cat === categoriaFiltro;
                 const claseBase = "px-6 py-2 shrink-0 rounded-full text-[10px] font-black uppercase transition-all shadow-lg cursor-pointer ";
                 const claseActiva = isSelected ? "bg-blue-600 text-white" : "bg-zinc-900 text-zinc-500 hover:text-white";
-                
                 cont.innerHTML += `<button onclick="filtrar('${cat}')" class="${claseBase} ${claseActiva}">${cat}</button>`;
             });
         }
 
-        window.filtrar = (cat) => {
-            categoriaFiltro = cat;
-            renderFiltros();
-            render();        
-        };
-
+        window.filtrar = (cat) => { categoriaFiltro = cat; renderFiltros(); render(); };
         window.buscarProducto = () => { textoBusqueda = document.getElementById('buscador').value.toLowerCase(); render(); };
 
-        function render() {
-            const cont = document.getElementById('contenedor-productos');
-            cont.innerHTML = '';
+        // Función para crear la tarjeta HTML de un producto
+        function generarHTMLProducto(p) {
+            const stockVal = p.stock || 0;
+            const esAgotado = stockVal <= 0;
+            const catName = p.categoria || "Otros";
+            const imgPlaceholder = p.imagen || "https://via.placeholder.com/300";
             
+            // Generador de Etiquetas Visuales
+            let htmlEtiqueta = '';
+            if (p.etiqueta === 'Oferta') htmlEtiqueta = `<span class="absolute top-4 left-4 z-20 bg-gradient-to-r from-red-600 to-pink-600 text-white text-[10px] font-black uppercase px-4 py-1.5 rounded-full shadow-lg border border-red-400">🔥 Oferta</span>`;
+            else if (p.etiqueta === 'Destacado') htmlEtiqueta = `<span class="absolute top-4 left-4 z-20 bg-gradient-to-r from-yellow-500 to-amber-500 text-black text-[10px] font-black uppercase px-4 py-1.5 rounded-full shadow-lg border border-yellow-300">⭐ Destacado</span>`;
+            else if (p.etiqueta === 'Más Vendido') htmlEtiqueta = `<span class="absolute top-4 left-4 z-20 bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] font-black uppercase px-4 py-1.5 rounded-full shadow-lg border border-orange-300">🏆 Más Vendido</span>`;
+
+            // Efectos de Agotado
+            const imgClass = esAgotado ? 'agotado-img w-full h-48 object-cover transition-all' : 'w-full h-48 object-cover hover:scale-105 transition-all duration-500';
+            const selloAgotado = esAgotado ? `<div class="absolute inset-0 bg-black/40 z-10 flex items-center justify-center rounded-[1.5rem]"><span class="bg-zinc-950/80 text-white border-2 border-red-600 font-black text-xl px-6 py-2 rounded-xl rotate-[-15deg] tracking-widest backdrop-blur-sm">AGOTADO</span></div>` : '';
+            
+            const btnCarritoHTML = esAgotado 
+                ? `<button disabled class="w-full bg-zinc-800 text-zinc-500 py-4 rounded-2xl font-black uppercase text-[10px] cursor-not-allowed">Agotado</button>`
+                : `<button onclick="agregarAlCarrito('${p.id}')" class="w-full bg-white text-black py-4 rounded-2xl font-black uppercase text-[10px] hover:bg-blue-600 hover:text-white transition-all shadow-lg">Añadir al Carrito</button>`;
+
+            return `
+                <div class="glass p-6 rounded-[2.5rem] relative group border-zinc-800 hover:border-blue-500/50 hover:shadow-[0_0_30px_rgba(37,99,235,0.15)] transition-all flex flex-col justify-between hover:-translate-y-1 duration-300">
+                    ${htmlEtiqueta}
+                    
+                    <div class="cursor-pointer" onclick="abrirProducto('${p.id}')">
+                        <div class="overflow-hidden rounded-[1.5rem] mb-4 bg-zinc-900 relative">
+                            ${selloAgotado}
+                            <img src="${imgPlaceholder}" class="${imgClass}" alt="${p.nombre}">
+                            ${!esAgotado ? `<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center z-10"><span class="text-white text-xs font-bold uppercase border border-white/50 px-4 py-2 rounded-full backdrop-blur-sm">Ver Detalle</span></div>` : ''}
+                        </div>
+                        <span class="text-[9px] font-black ${esAgotado ? 'text-zinc-600' : 'text-blue-500'} uppercase tracking-widest block mb-2">${catName}</span>
+                        <h3 class="text-xl font-black italic uppercase leading-tight mb-2 ${esAgotado ? 'text-zinc-500' : 'text-white'} group-hover:text-blue-400 transition-all">${p.nombre}</h3>
+                        <p class="text-3xl font-black ${esAgotado ? 'text-zinc-600' : 'text-white'} mb-6">S/ ${p.precio}</p>
+                    </div>
+                    
+                    <div>
+                        <div class="bg-zinc-900/80 p-3 rounded-xl mb-4 flex justify-between items-center border border-zinc-800">
+                            <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Stock Disponible</span>
+                            <span class="font-black text-sm ${esAgotado ? 'text-red-600' : 'text-green-400'}">${stockVal} Und.</span>
+                        </div>
+                        
+                        ${btnCarritoHTML}
+
+                        ${esAdmin ? `
+                            <div class="flex gap-2 mt-4 relative z-20">
+                                <button onclick="prepararEdicion('${p.id}')" class="flex-1 bg-zinc-800 border border-zinc-700 text-blue-400 py-3 rounded-xl text-[9px] font-bold uppercase hover:bg-blue-900/30 transition-all">Editar</button>
+                                <button onclick="eliminarProd('${p.id}')" class="flex-1 bg-zinc-800 border border-zinc-700 text-red-500 py-3 rounded-xl text-[9px] font-bold uppercase hover:bg-red-900/30 transition-all">Borrar</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            // 1. Renderizar Destacados/Ofertas (Ignora los filtros de categoría/búsqueda para que siempre se vean)
+            const contDestacados = document.getElementById('contenedor-destacados');
+            const seccionDestacados = document.getElementById('seccion-destacados');
+            const prodsDestacados = productosData.filter(p => p.etiqueta && p.etiqueta !== "" && (p.stock || 0) > 0);
+            
+            if(prodsDestacados.length > 0 && textoBusqueda === "" && categoriaFiltro === "Todos") {
+                seccionDestacados.classList.remove('hidden');
+                contDestacados.innerHTML = prodsDestacados.map(p => generarHTMLProducto(p)).join('');
+            } else {
+                seccionDestacados.classList.add('hidden');
+            }
+
+            // 2. Renderizar Catálogo General
+            const cont = document.getElementById('contenedor-productos');
             const filtrados = productosData.filter(p => {
                 const cat = p.categoria || "Otros";
                 const coincideCategoria = (categoriaFiltro === "Todos" || cat === categoriaFiltro);
@@ -433,60 +482,16 @@
             
             if(filtrados.length === 0) {
                 cont.innerHTML = `<p class="col-span-full text-center text-zinc-600 py-10 font-bold tracking-widest uppercase">No hay productos aquí.</p>`;
-                return;
+            } else {
+                cont.innerHTML = filtrados.map(p => generarHTMLProducto(p)).join('');
             }
-
-            filtrados.forEach(p => {
-                const stockVal = p.stock || 0;
-                const catName = p.categoria || "Otros";
-                const colorStock = stockVal <= 2 ? 'text-red-500' : 'text-white';
-                const imgPlaceholder = p.imagen || "https://via.placeholder.com/300x200.png?text=Sin+Foto";
-                
-                cont.innerHTML += `
-                    <div class="glass p-6 rounded-[2.5rem] relative group border-zinc-800 hover:border-blue-500/50 hover:shadow-[0_0_30px_rgba(37,99,235,0.15)] transition-all flex flex-col justify-between hover:-translate-y-1 duration-300">
-                        
-                        <div class="cursor-pointer" onclick="abrirProducto('${p.id}')">
-                            <div class="overflow-hidden rounded-[1.5rem] mb-4 bg-zinc-900 relative">
-                                <img src="${imgPlaceholder}" class="w-full h-48 object-cover hover:scale-105 transition-all duration-500" alt="${p.nombre}">
-                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                                    <span class="text-white text-xs font-bold uppercase tracking-widest border border-white/50 px-4 py-2 rounded-full backdrop-blur-sm">Ver Detalle</span>
-                                </div>
-                            </div>
-                            <span class="text-[9px] font-black text-blue-500 uppercase tracking-widest block mb-2">${catName}</span>
-                            <h3 class="text-xl font-black italic uppercase leading-tight mb-2 text-white group-hover:text-blue-400 transition-all">${p.nombre}</h3>
-                            <p class="text-3xl font-black text-white mb-6">S/ ${p.precio}</p>
-                        </div>
-                        
-                        <div>
-                            <div class="bg-zinc-900/80 p-3 rounded-xl mb-4 flex justify-between items-center border border-zinc-800">
-                                <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Stock Disponible</span>
-                                <span class="font-black text-sm ${colorStock}">${stockVal} Und.</span>
-                            </div>
-                            <button onclick="agregarAlCarrito('${p.id}')" class="w-full bg-white text-black py-4 rounded-2xl font-black uppercase text-[10px] hover:bg-blue-600 hover:text-white transition-all flex justify-center items-center gap-2 shadow-lg">
-                                <span>Añadir al Carrito</span>
-                            </button>
-
-                            ${esAdmin ? `
-                                <div class="flex gap-2 mt-4">
-                                    <button onclick="prepararEdicion('${p.id}')" class="flex-1 bg-zinc-800 border border-zinc-700 text-blue-400 py-3 rounded-xl text-[9px] font-bold uppercase hover:bg-blue-900/30 transition-all">Editar</button>
-                                    <button onclick="eliminarProd('${p.id}')" class="flex-1 bg-zinc-800 border border-zinc-700 text-red-500 py-3 rounded-xl text-[9px] font-bold uppercase hover:bg-red-900/30 transition-all">Borrar</button>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-            });
         }
 
-        // --- ESCUCHAR FIREBASE ---
+        // --- INICIO ---
         onSnapshot(collection(db, "productos"), (snap) => {
             productosData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            renderFiltros(); 
-            render();
-            actualizarInterfazCarrito();
+            renderFiltros(); render(); actualizarInterfazCarrito();
         });
-
-        // --- BOTONES DE MODAL LOGIN ---
         window.abrirLogin = () => document.getElementById('modal-login').classList.remove('hidden');
         window.cerrarLogin = () => document.getElementById('modal-login').classList.add('hidden');
     </script>
